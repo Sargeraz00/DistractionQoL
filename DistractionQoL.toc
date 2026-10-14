@@ -1,0 +1,27 @@
+## Interface: 120105, 120100, 120000, 110100
+## Title: |cff00e5ffDistractionQoL|r
+## Notes: Ultra-lightweight Raider Quality-of-Life & Performance Toolkit.
+## Notes-esES: Herramientas ultraligeras de QoL y rendimiento para Raiders (Anti-liberar, Flujo de Raid, Automatizaciones, FPS).
+## Notes-esMX: Herramientas ultraligeras de QoL y rendimiento para Raiders (Anti-liberar, Flujo de Raid, Automatizaciones, FPS).
+## Author: Sargeraz
+## Version: 2.0.1
+## SavedVariables: DistractionQoLDB
+## IconTexture: Interface\Icons\Spell_Shadow_DeathScream
+## Category: Combat
+## Category-enUS: Combat
+## Category-esES: Combate
+## Category-esMX: Combate
+## OptionalDeps: EllesmereUI, EllesmereUIBags, EllesmereUIBlizzardSkin, ElvUI
+
+Locales.lua
+Migration.lua
+Config.lua
+Detection.lua
+Alert.lua
+Hook.lua
+RaidFlow.lua
+Automation.lua
+Optimizer.lua
+BagSort.lua
+UI.lua
+Core.lua

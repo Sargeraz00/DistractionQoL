@@ -1,0 +1,17 @@
+# Auto detect text files and perform line-ending normalization
+* text=auto
+
+# Code, markup and metadata
+*.lua text eol=lf
+*.toc text eol=lf
+*.md  text eol=lf
+*.txt text eol=lf
+*.xml text eol=lf
+
+# Binary media assets (guarantee Git never alters binary bytes)
+*.png binary
+*.tga binary
+*.blp binary
+*.ogg binary
+*.mp3 binary
+*.wav binary
