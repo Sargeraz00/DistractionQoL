@@ -21,6 +21,7 @@ if isSpanish then
     L["TAB_RAIDFLOW"] = "Flujo de Raid"
     L["TAB_AUTOMATION"] = "Automatizaciones"
     L["TAB_PERFORMANCE"] = "Rendimiento"
+    L["TAB_CONFLICTS"] = "Compatibilidad"
 
     -- Section 1: Anti-Release
     L["SECTION_RELEASE_TITLE"] = "Protección Anti-Liberar (Spirit Release Guard)"
@@ -67,7 +68,13 @@ if isSpanish then
     L["CLEAN_LOADING_GC"] = "Limpieza de memoria en pantallas de carga (evita micro-tirones en combate)"
     L["BTN_FPS_SAVE"] = "Guardar Actual"
     L["BTN_FPS_OPT"] = "Optimizar FPS"
-    L["BTN_FPS_RESTORE"] = "Restaurar"
+    -- Section 5: Compatibility & Conflicts
+    L["SECTION_CONFLICTS_TITLE"] = "Resolución de Conflictos & Compatibilidad"
+    L["SECTION_CONFLICTS_DESC"] = "Detecta funciones compartidas con EllesmereUI y ElvUI. Puedes definir qué addon controla cada función o restablecer los avisos emergentes."
+    L["BTN_RESET_CONFLICTS"] = "Restablecer Avisos (Volver a Preguntar)"
+    L["CONFLICT_ACTIVE_WITH"] = "Conflicto con: |cffffcc00%s|r"
+    L["CONFLICT_NONE"] = "|cff888888Sin conflicto detectado|r"
+    L["MSG_CONFLICTS_RESET"] = "Se han restablecido todas las elecciones de compatibilidad. Se te volverá a preguntar en caso de conflicto."
 
     -- Bottom Buttons
     L["BTN_MUTE"] = "Mutear Sonido"
@@ -143,6 +150,7 @@ else
     L["TAB_RAIDFLOW"] = "Raid Flow"
     L["TAB_AUTOMATION"] = "Automation"
     L["TAB_PERFORMANCE"] = "Performance"
+    L["TAB_CONFLICTS"] = "Compatibility"
 
     -- Section 1: Anti-Release
     L["SECTION_RELEASE_TITLE"] = "Anti-Release Protection (Spirit Release Guard)"
@@ -190,6 +198,14 @@ else
     L["BTN_FPS_SAVE"] = "Save Current"
     L["BTN_FPS_OPT"] = "Optimal FPS"
     L["BTN_FPS_RESTORE"] = "Restore"
+
+    -- Section 5: Compatibility & Conflicts
+    L["SECTION_CONFLICTS_TITLE"] = "Feature Conflicts & Compatibility"
+    L["SECTION_CONFLICTS_DESC"] = "Detects overlapping features with EllesmereUI and ElvUI. Choose which addon controls each action or reset popup prompts."
+    L["BTN_RESET_CONFLICTS"] = "Reset Prompts (Ask Again)"
+    L["CONFLICT_ACTIVE_WITH"] = "Conflict with: |cffffcc00%s|r"
+    L["CONFLICT_NONE"] = "|cff888888No conflict detected|r"
+    L["MSG_CONFLICTS_RESET"] = "All compatibility choices have been reset. You will be prompted again when conflicting actions occur."
 
     -- Bottom Buttons
     L["BTN_MUTE"] = "Mute Sound"

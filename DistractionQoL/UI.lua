@@ -181,6 +181,7 @@ function DQ.UI:CreatePanel()
         { id = "raidflow", label = L["TAB_RAIDFLOW"] or "Flujo Raid" },
         { id = "automation", label = L["TAB_AUTOMATION"] or "Automatizaciones" },
         { id = "performance", label = L["TAB_PERFORMANCE"] or "Rendimiento" },
+        { id = "conflicts", label = L["TAB_CONFLICTS"] or "Compatibilidad" },
     }
 
     local tabButtons = {}
@@ -210,7 +211,7 @@ function DQ.UI:CreatePanel()
         end
     end
 
-    local tabWidth = 110
+    local tabWidth = 86
     local tabHeight = 24
     local tabStartX = 14
     local tabY = -34
@@ -489,6 +490,131 @@ function DQ.UI:CreatePanel()
     btnFpsRestore:SetPoint("LEFT", btnFpsOpt, "RIGHT", 10, 0)
     btnFpsRestore:SetScript("OnClick", function()
         if DQ.Optimizer then DQ.Optimizer:RestoreOriginal() end
+    end)
+
+    -- ==========================================================
+    -- PAGE 5: CONFLICTS & COMPATIBILITY
+    -- ==========================================================
+    local pConflicts = tabPages["conflicts"]
+
+    local confTitle = pConflicts:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    confTitle:SetPoint("TOPLEFT", pConflicts, "TOPLEFT", 4, 0)
+    confTitle:SetText("|cff00e5ff" .. (L["SECTION_CONFLICTS_TITLE"] or "Resolución de Conflictos & Compatibilidad") .. "|r")
+
+    local confDesc = pConflicts:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    confDesc:SetPoint("TOPLEFT", confTitle, "BOTTOMLEFT", 0, -4)
+    confDesc:SetPoint("RIGHT", pConflicts, "RIGHT", -4, 0)
+    confDesc:SetJustifyH("LEFT")
+    confDesc:SetWordWrap(true)
+    confDesc:SetText(L["SECTION_CONFLICTS_DESC"] or "Detecta funciones compartidas con EllesmereUI y ElvUI. Puedes definir qué addon controla cada función o restablecer los avisos emergentes.")
+
+    local conflictRows = {}
+    local featureOrder = { "autoRepair", "autoSellJunk", "fastLoot", "autoSkipCinematics", "bagSort" }
+
+    local function RefreshConflictRows()
+        if not DQ.ConflictResolver then return end
+        local defs = DQ.ConflictResolver.DEFINITIONS or {}
+
+        for _, key in ipairs(featureOrder) do
+            local def = defs[key]
+            local row = conflictRows[key]
+            if def and row then
+                local ext = DQ.ConflictResolver:DetectConflict(key)
+                local currentChoice = DQ.ConflictResolver:GetChoice(key) or "DistractionQoL"
+
+                if ext then
+                    local statusFmt = L["CONFLICT_ACTIVE_WITH"] or "Conflicto con: |cffffcc00%s|r"
+                    row.statusText:SetText(string.format(statusFmt, ext))
+                    row.btnExt:SetButtonText(ext)
+                    row.btnExt:Show()
+
+                    if currentChoice == "DistractionQoL" then
+                        row.btnDQ:SetBackdropColor(0.0, 0.40, 0.50, 0.9)
+                        row.btnDQ:SetBackdropBorderColor(0.0, 0.85, 1.0, 1)
+                        row.btnExt:SetBackdropColor(0.12, 0.12, 0.16, 0.8)
+                        row.btnExt:SetBackdropBorderColor(0.3, 0.3, 0.35, 1)
+                    else
+                        row.btnDQ:SetBackdropColor(0.12, 0.12, 0.16, 0.8)
+                        row.btnDQ:SetBackdropBorderColor(0.3, 0.3, 0.35, 1)
+                        row.btnExt:SetBackdropColor(0.40, 0.20, 0.55, 0.9)
+                        row.btnExt:SetBackdropBorderColor(0.70, 0.45, 0.95, 1)
+                    end
+                else
+                    row.statusText:SetText(L["CONFLICT_NONE"] or "|cff888888Sin conflicto detectado|r")
+                    row.btnExt:Hide()
+                    row.btnDQ:SetBackdropColor(0.0, 0.40, 0.50, 0.9)
+                    row.btnDQ:SetBackdropBorderColor(0.0, 0.85, 1.0, 1)
+                end
+            end
+        end
+    end
+
+    local rowStartY = -42
+    local rowHeight = 48
+
+    for i, key in ipairs(featureOrder) do
+        local def = (DQ.ConflictResolver and DQ.ConflictResolver.DEFINITIONS and DQ.ConflictResolver.DEFINITIONS[key]) or {}
+        local isSpanish = (GetLocale() == "esES" or GetLocale() == "esMX")
+        local name = isSpanish and (def.name or key) or (def.nameEn or key)
+
+        local rowY = rowStartY - (i - 1) * rowHeight
+
+        local rowBg = pConflicts:CreateTexture(nil, "BACKGROUND")
+        rowBg:SetPoint("TOPLEFT", pConflicts, "TOPLEFT", 0, rowY)
+        rowBg:SetPoint("BOTTOMRIGHT", pConflicts, "TOPRIGHT", 0, rowY - (rowHeight - 6))
+        rowBg:SetColorTexture(0.10, 0.10, 0.14, 0.45)
+
+        local icon = pConflicts:CreateTexture(nil, "ARTWORK")
+        icon:SetSize(26, 26)
+        icon:SetPoint("LEFT", pConflicts, "TOPLEFT", 8, rowY - 21)
+        icon:SetTexture(def.icon or "Interface\\Icons\\INV_Misc_QuestionMark")
+
+        local lblName = pConflicts:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        lblName:SetPoint("TOPLEFT", icon, "TOPRIGHT", 8, 2)
+        lblName:SetText("|cffffffff" .. name .. "|r")
+
+        local lblStatus = pConflicts:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+        lblStatus:SetPoint("TOPLEFT", lblName, "BOTTOMLEFT", 0, -2)
+        lblStatus:SetText("Verificando...")
+
+        local btnDQ = CreateFlatButton(pConflicts, "DistractionQoL", 100, 22)
+        btnDQ:SetPoint("RIGHT", pConflicts, "TOPRIGHT", -114, rowY - 21)
+        btnDQ:SetScript("OnClick", function()
+            if DQ.ConflictResolver then
+                DQ.ConflictResolver:SetChoice(key, "DistractionQoL", true)
+                RefreshConflictRows()
+            end
+        end)
+
+        local btnExt = CreateFlatButton(pConflicts, "Externo", 100, 22)
+        btnExt:SetPoint("RIGHT", pConflicts, "TOPRIGHT", -8, rowY - 21)
+        btnExt:SetScript("OnClick", function()
+            if DQ.ConflictResolver then
+                DQ.ConflictResolver:SetChoice(key, "External", true)
+                RefreshConflictRows()
+            end
+        end)
+
+        conflictRows[key] = {
+            icon = icon,
+            nameText = lblName,
+            statusText = lblStatus,
+            btnDQ = btnDQ,
+            btnExt = btnExt,
+        }
+    end
+
+    local btnResetConflicts = CreateFlatButton(pConflicts, L["BTN_RESET_CONFLICTS"] or "Restablecer Avisos (Volver a Preguntar)", 270, 24)
+    btnResetConflicts:SetPoint("BOTTOMLEFT", pConflicts, "BOTTOMLEFT", 4, 8)
+    btnResetConflicts:SetScript("OnClick", function()
+        if DQ.ConflictResolver then
+            DQ.ConflictResolver:ResetAllChoices()
+            RefreshConflictRows()
+        end
+    end)
+
+    pConflicts:SetScript("OnShow", function()
+        RefreshConflictRows()
     end)
 
     -- ==========================================================

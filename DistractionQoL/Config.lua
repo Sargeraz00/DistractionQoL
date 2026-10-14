@@ -49,6 +49,12 @@ local defaultSettings = {
         cleanLoadingGC = true,     -- Clean Lua garbage on loading screens to prevent combat stutter
         backup = {},               -- Saved original graphics CVars
     },
+
+    -- 5. External Addon Conflicts (EllesmereUI, ElvUI)
+    conflicts = {
+        choices = {},              -- [featureKey] = "DistractionQoL" or "External"
+        dontAskAgain = {},         -- [featureKey] = true/false
+    },
 }
 
 -- Recursively copy missing defaults into target table

@@ -19,6 +19,7 @@ Config.lua
 Detection.lua
 Alert.lua
 Hook.lua
+ConflictResolver.lua
 RaidFlow.lua
 Automation.lua
 Optimizer.lua

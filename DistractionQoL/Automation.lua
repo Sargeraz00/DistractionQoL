@@ -169,10 +169,26 @@ function DQ.Automation:Init()
         -- 2. AUTO SELL JUNK & AUTO REPAIR
         elseif event == "MERCHANT_SHOW" then
             if DQ.Config:Get("automation", "autoSellJunk") then
-                SellJunkItems()
+                C_Timer.After(0.05, function()
+                    if DQ.ConflictResolver and DQ.ConflictResolver.CheckAndExecute then
+                        DQ.ConflictResolver:CheckAndExecute("autoSellJunk", function()
+                            SellJunkItems()
+                        end)
+                    else
+                        SellJunkItems()
+                    end
+                end)
             end
             if DQ.Config:Get("automation", "autoRepair") then
-                HandleAutoRepair()
+                C_Timer.After(0.15, function()
+                    if DQ.ConflictResolver and DQ.ConflictResolver.CheckAndExecute then
+                        DQ.ConflictResolver:CheckAndExecute("autoRepair", function()
+                            HandleAutoRepair()
+                        end)
+                    else
+                        HandleAutoRepair()
+                    end
+                end)
             end
 
         -- 3. AUTO SKIP CINEMATICS & MOVIES
@@ -180,10 +196,18 @@ function DQ.Automation:Init()
             if DQ.Config:Get("automation", "autoSkipCinematics") then
                 -- Guard against InCombatLockdown to avoid ADDON_ACTION_BLOCKED in 12.1.5
                 if not (InCombatLockdown and InCombatLockdown()) then
-                    if CinematicFrame_CancelCinematic then
-                        pcall(CinematicFrame_CancelCinematic)
-                    elseif StopCinematic then
-                        pcall(StopCinematic)
+                    local function DoSkipCinematic()
+                        if CinematicFrame_CancelCinematic then
+                            pcall(CinematicFrame_CancelCinematic)
+                        elseif StopCinematic then
+                            pcall(StopCinematic)
+                        end
+                    end
+
+                    if DQ.ConflictResolver and DQ.ConflictResolver.CheckAndExecute then
+                        DQ.ConflictResolver:CheckAndExecute("autoSkipCinematics", DoSkipCinematic)
+                    else
+                        DoSkipCinematic()
                     end
                 end
             end
@@ -191,10 +215,18 @@ function DQ.Automation:Init()
             if DQ.Config:Get("automation", "autoSkipCinematics") then
                 -- Guard against InCombatLockdown to avoid ADDON_ACTION_BLOCKED in 12.1.5
                 if not (InCombatLockdown and InCombatLockdown()) then
-                    if GameMovieFinished then
-                        pcall(GameMovieFinished)
-                    elseif MovieFrame_StopMovie then
-                        pcall(MovieFrame_StopMovie)
+                    local function DoSkipMovie()
+                        if GameMovieFinished then
+                            pcall(GameMovieFinished)
+                        elseif MovieFrame_StopMovie then
+                            pcall(MovieFrame_StopMovie)
+                        end
+                    end
+
+                    if DQ.ConflictResolver and DQ.ConflictResolver.CheckAndExecute then
+                        DQ.ConflictResolver:CheckAndExecute("autoSkipCinematics", DoSkipMovie)
+                    else
+                        DoSkipMovie()
                     end
                 end
             end
@@ -216,7 +248,13 @@ function DQ.Automation:Init()
         -- 5. FAST LOOT
         elseif event == "LOOT_READY" then
             if DQ.Config:Get("automation", "fastLoot") then
-                HandleFastLoot()
+                if DQ.ConflictResolver and DQ.ConflictResolver.CheckAndExecute then
+                    DQ.ConflictResolver:CheckAndExecute("fastLoot", function()
+                        HandleFastLoot()
+                    end)
+                else
+                    HandleFastLoot()
+                end
             end
         end
     end)

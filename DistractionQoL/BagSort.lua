@@ -187,8 +187,7 @@ local function StartQueueProcessing()
     end)
 end
 
--- Main function to calculate layout and execute sorting
-function DQ.BagSort:SortBags()
+local function ExecuteBagSortInternal()
     local L = DQ.L or {}
 
     -- Guard 1: Combat lockdown
@@ -451,6 +450,24 @@ function DQ.BagSort:SortBags()
     queue.actions = actions
     PrintMsg(string.format(L["MSG_BAG_SORT_START"] or "Iniciando ordenamiento inverso de bolsas (%d movimientos)...", #actions))
     StartQueueProcessing()
+end
+
+-- Public SortBags with intelligent conflict resolution
+function DQ.BagSort:SortBags()
+    if DQ.ConflictResolver and DQ.ConflictResolver.CheckAndExecute then
+        DQ.ConflictResolver:CheckAndExecute("bagSort", function()
+            ExecuteBagSortInternal()
+        end, function()
+            -- External Addon Sort fallback
+            if _G["EUI_Bags"] and _G["EUI_Bags"]._doVisualSort then
+                _G["EUI_Bags"]._doVisualSort()
+            elseif C_Container and C_Container.SortBags then
+                C_Container.SortBags()
+            end
+        end)
+    else
+        ExecuteBagSortInternal()
+    end
 end
 
 -- ==========================================================

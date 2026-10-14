@@ -39,6 +39,12 @@ An **ultra-lightweight**, event-driven Quality-of-Life (QoL) and performance too
 - **Full Reversibility**: Includes instant **Guardar Actual (Backup)** and **Restaurar (Restore)**.
 - **Loading Screen Memory Cleanup**: Cleans Lua garbage collection (`collectgarbage("collect")`) during loading screens, preventing combat frame stutter.
 
+### 5. 🤝 Intelligent Conflict Resolution & External Addon Compatibility
+- **EllesmereUI & ElvUI Overlap Detection**: Detects overlapping features (*Auto-Repair, Auto-Sell Junk, Fast Loot, Auto-Skip Cinematics, and Bag Sorting*).
+- **Interactive Decision Modal**: When an overlapping action is triggered, a sleek obsidian prompt asks whether **DistractionQoL** or the external suite (**EllesmereUI** or **ElvUI**) should manage that specific feature.
+- **"Don't Ask Again" Checkbox**: Saves your preference permanently with one click.
+- **Live Compatibility Dashboard**: View active conflicts, switch preferences between addons, or reset prompts anytime under `/qol` -> **[Compatibilidad / Compatibility]**.
+
 ---
 
 ## 🕹️ Available Commands
@@ -71,6 +77,7 @@ The interface features an **Obsidian & Neon Cyan** design with tabbed navigation
 - **[Flujo Raid / Raid Flow]**: Parpadear en barra de tareas, Audio en Ready Check, Chequeo de Consumibles.
 - **[Automatizaciones / Automation]**: Auto-Res, Auto-Reparar (Fondos de Hermandad), Auto-Vender Basura, Saltar Cinemáticas, Bloquear Duelos, Fast Loot.
 - **[Rendimiento / Performance]**: Guardar Actual, Máximo FPS, Restaurar, Limpieza de memoria en pantallas de carga.
+- **[Compatibilidad / Compatibility]**: Monitor de conflictos en tiempo real con EllesmereUI y ElvUI, selectores directos por función y botón de restablecer avisos.
 
 Seamlessly skins with **EllesmereUI** (Official Skinning API) and **ElvUI**.
 
@@ -82,16 +89,19 @@ Seamlessly skins with **EllesmereUI** (Official Skinning API) and **ElvUI**.
 DistractionQoL/
 ├── DistractionQoL.toc       # Addon metadata & load order (Interface: 120105)
 ├── Locales.lua             # Multi-language dictionary (esES, esMX, enUS)
-├── Config.lua              # Central configuration store, defaults, and legacy DB migration
+├── Migration.lua           # Backward-compatible database migration from BaneBurro
+├── Config.lua              # Central configuration store, defaults, and conflict persistence
 ├── Detection.lua           # Content, difficulty, combat, and consumable detection logic
 ├── Alert.lua               # Giant visual frame renderer and audio player
 ├── Hook.lua                # Taint-free release interception (GameDialogMixin & OnButton1)
+├── ConflictResolver.lua    # Real-time conflict detector & prompt resolver for EllesmereUI/ElvUI
 ├── RaidFlow.lua            # Taskbar flash, Ready Check audio ping, and pre-pull consumables check
 ├── Automation.lua          # Auto-Res, Auto-Repair, Auto-Sell, Auto-Skip Movies, Duel block, Fast Loot
 ├── Optimizer.lua           # Raid FPS & CVars optimizer with backup/restore & loading GC cleanup
 ├── BagSort.lua             # Reverse bag sorting & profession reagent stasher with bag frame button
-├── UI.lua                  # Tabbed obsidian settings window with EllesmereUI & ElvUI skinning
+├── UI.lua                  # 5-tab obsidian settings window with EllesmereUI & ElvUI skinning
 ├── Core.lua                # Addon lifecycle events and slash command dispatcher (/qol, /burro)
 ├── Bane.ogg                # Audio alert asset
 └── README.md               # Addon documentation
 ```
+
