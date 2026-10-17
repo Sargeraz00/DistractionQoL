@@ -83,25 +83,33 @@ Seamlessly skins with **EllesmereUI** (Official Skinning API) and **ElvUI**.
 
 ---
 
-## 📂 Modular Architecture
+## 📂 Repository & Addon Structure
 
 ```
-DistractionQoL/
-├── DistractionQoL.toc       # Addon metadata & load order (Interface: 120105)
-├── Locales.lua             # Multi-language dictionary (esES, esMX, enUS)
-├── Migration.lua           # Backward-compatible database migration from BaneBurro
-├── Config.lua              # Central configuration store, defaults, and conflict persistence
-├── Detection.lua           # Content, difficulty, combat, and consumable detection logic
-├── Alert.lua               # Giant visual frame renderer and audio player
-├── Hook.lua                # Taint-free release interception (GameDialogMixin & OnButton1)
-├── ConflictResolver.lua    # Real-time conflict detector & prompt resolver for EllesmereUI/ElvUI
-├── RaidFlow.lua            # Taskbar flash, Ready Check audio ping, and pre-pull consumables check
-├── Automation.lua          # Auto-Res, Auto-Repair, Auto-Sell, Auto-Skip Movies, Duel block, Fast Loot
-├── Optimizer.lua           # Raid FPS & CVars optimizer with backup/restore & loading GC cleanup
-├── BagSort.lua             # Reverse bag sorting & profession reagent stasher with bag frame button
-├── UI.lua                  # 5-tab obsidian settings window with EllesmereUI & ElvUI skinning
-├── Core.lua                # Addon lifecycle events and slash command dispatcher (/qol, /burro)
-├── Bane.ogg                # Audio alert asset
-└── README.md               # Addon documentation
+DistractionQoL/ (Repository Root)
+├── .gitattributes          # Normalization & export-ignore for CurseForge / Git Archive
+├── .gitignore               # Ignore rules (OS, IDE, WoW cache, zip packages)
+├── .pkgmeta                 # CurseForge / BigWigs packager configuration
+├── package.ps1              # Script to package clean CurseForge zip archive
+├── README.md                # Repository documentation
+└── DistractionQoL/          # Pure Addon Folder (CurseForge release package)
+    ├── DistractionQoL.toc   # Addon metadata & load order (Interface: 120105)
+    ├── Locales.lua          # Multi-language dictionary (esES, esMX, enUS)
+    ├── Migration.lua        # Backward-compatible database migration from BaneBurro
+    ├── Config.lua           # Central configuration store, defaults, and conflict persistence
+    ├── Detection.lua        # Content, difficulty, combat, and consumable detection logic
+    ├── Alert.lua            # Giant visual frame renderer and audio player
+    ├── Hook.lua             # Taint-free release interception (GameDialogMixin & OnButton1)
+    ├── ConflictResolver.lua # Real-time conflict detector & prompt resolver for EllesmereUI/ElvUI
+    ├── RaidFlow.lua         # Taskbar flash, Ready Check audio ping, and pre-pull consumables check
+    ├── Automation.lua       # Auto-Res, Auto-Repair, Auto-Sell, Auto-Skip Movies, Duel block, Fast Loot
+    ├── Optimizer.lua        # Raid FPS & CVars optimizer with backup/restore & loading GC cleanup
+    ├── BagSort.lua          # Reverse bag sorting & profession reagent stasher with bag frame button
+    ├── UI.lua               # 5-tab obsidian settings window with EllesmereUI & ElvUI skinning
+    ├── Core.lua             # Addon lifecycle events and slash command dispatcher (/qol, /burro)
+    ├── Bane.ogg             # Audio alert asset
+    ├── Bane.mp3             # Audio alert asset (fallback)
+    ├── sound_on.png / .tga  # UI audio indicator icon
+    └── sound_off.png / .tga # UI audio indicator icon
 ```
 

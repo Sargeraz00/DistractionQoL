@@ -26,3 +26,9 @@ Thumbs.db
 WTF/
 Cache/
 Logs/
+
+# Packaging & Release outputs
+*.zip
+release/
+build/
+dist/

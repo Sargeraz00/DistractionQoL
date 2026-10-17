@@ -1,0 +1,11 @@
+package-as: DistractionQoL
+
+move-folders:
+  DistractionQoL: DistractionQoL
+
+ignore:
+  - .gitattributes
+  - .gitignore
+  - .pkgmeta
+  - README.md
+  - package.ps1
