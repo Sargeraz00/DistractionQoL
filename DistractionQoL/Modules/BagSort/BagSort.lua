@@ -516,6 +516,9 @@ end
 -- ==========================================================
 -- ELLESMEREUI BAGS INTEGRATION
 -- ==========================================================
+local originalEUISortOnClick = nil
+local originalEUISortOnEnter = nil
+
 local function IsEllesmereBagsLoaded()
     return _G["EUI_Bags"] ~= nil and _G["EUI_Bags"]._sortBtn ~= nil
 end
@@ -524,11 +527,28 @@ function DQ.BagSort:UpdateEllesmereIntegration()
     if not IsEllesmereBagsLoaded() then return end
 
     local euiSortBtn = _G["EUI_Bags"]._sortBtn
+    if not euiSortBtn then return end
+
+    -- Capture original native scripts before any DistractionQoL modifications
+    if not originalEUISortOnClick and euiSortBtn:GetScript("OnClick") then
+        local currentClick = euiSortBtn:GetScript("OnClick")
+        if currentClick ~= DQ.BagSort._dqSortOnClick then
+            originalEUISortOnClick = currentClick
+        end
+    end
+    if not originalEUISortOnEnter and euiSortBtn:GetScript("OnEnter") then
+        local currentEnter = euiSortBtn:GetScript("OnEnter")
+        if currentEnter ~= DQ.BagSort._dqSortOnEnter then
+            originalEUISortOnEnter = currentEnter
+        end
+    end
+
+    local conflictChoice = (DQ.ConflictResolver and DQ.ConflictResolver.GetChoice and DQ.ConflictResolver:GetChoice("bagSort"))
     local shouldOverride = DQ.Config:Get("automation", "overrideEllesmereSort") ~= false
     local enabled = DQ.Config:Get("automation", "bagSortButton") ~= false
 
-    if not enabled then
-        -- Bag sorting button disabled completely
+    if conflictChoice == "External" or conflictChoice == "Disabled" or not enabled or not shouldOverride then
+        -- Ceded to EllesmereUI or Disabled: Restore EllesmereUI's native OnClick and OnEnter
         if originalEUISortOnClick then
             euiSortBtn:SetScript("OnClick", originalEUISortOnClick)
         end
@@ -539,64 +559,39 @@ function DQ.BagSort:UpdateEllesmereIntegration()
         return
     end
 
-    if shouldOverride then
-        -- ----------------------------------------------------
-        -- MODE A: OVERRIDE ELLESMEREUI'S SORT BUTTON
-        -- ----------------------------------------------------
-        if not originalEUISortOnClick then
-            originalEUISortOnClick = euiSortBtn:GetScript("OnClick")
-        end
-        if not originalEUISortOnEnter then
-            originalEUISortOnEnter = euiSortBtn:GetScript("OnEnter")
-        end
+    -- DistractionQoL is actively managing bag sort: Override Ellesmere button
+    DQ.BagSort._dqSortOnClick = function()
+        DQ.BagSort:SortBags()
+    end
+    euiSortBtn:SetScript("OnClick", DQ.BagSort._dqSortOnClick)
 
-        euiSortBtn:SetScript("OnClick", function()
-            DQ.BagSort:SortBags()
-        end)
+    DQ.BagSort._dqSortOnEnter = function(btn)
+        local L = DQ.L or {}
+        GameTooltip:SetOwner(btn, "ANCHOR_TOPLEFT")
+        GameTooltip:AddLine(L["BAG_SORT_TITLE"] or "|cff00e5ffDistractionQoL - Orden Inverso & Materiales|r")
+        GameTooltip:AddLine(L["BAG_SORT_DESC_1"] or "|cffffcc001.|r Mueve materiales de profesión a la bolsa de materiales (Bag 5).", 1, 1, 1)
+        GameTooltip:AddLine(L["BAG_SORT_DESC_2"] or "|cffffcc002.|r Si sobran materiales, los coloca arriba del todo.", 1, 1, 1)
+        GameTooltip:AddLine(L["BAG_SORT_DESC_3"] or "|cffffcc003.|r Resto de objetos (equipo, consumibles) van abajo del todo.", 1, 1, 1)
+        GameTooltip:AddLine("|cff00ff00Clic para ordenar bolsas (Modo DistractionQoL).|r", 0.2, 1, 0.2)
+        GameTooltip:Show()
+    end
+    euiSortBtn:SetScript("OnEnter", DQ.BagSort._dqSortOnEnter)
 
-        euiSortBtn:SetScript("OnEnter", function(btn)
-            local L = DQ.L or {}
-            GameTooltip:SetOwner(btn, "ANCHOR_TOPLEFT")
-            GameTooltip:AddLine(L["BAG_SORT_TITLE"] or "|cff00e5ffDistractionQoL — Orden Inverso & Materiales|r")
-            GameTooltip:AddLine(L["BAG_SORT_DESC_1"] or "|cffffcc001.|r Mueve materiales de profesión a la bolsa de materiales (Bag 5).", 1, 1, 1)
-            GameTooltip:AddLine(L["BAG_SORT_DESC_2"] or "|cffffcc002.|r Si sobran materiales, los coloca arriba del todo.", 1, 1, 1)
-            GameTooltip:AddLine(L["BAG_SORT_DESC_3"] or "|cffffcc003.|r Resto de objetos (equipo, consumibles) van abajo del todo.", 1, 1, 1)
-            GameTooltip:AddLine("|cff00ff00Clic para ordenar bolsas (Modo DistractionQoL).|r", 0.2, 1, 0.2)
-            GameTooltip:Show()
-        end)
-
-        -- Hide standalone button when override is active
-        if sortBtn then
-            sortBtn:Hide()
-        end
-    else
-        -- ----------------------------------------------------
-        -- MODE B: RESTORE ELLESMEREUI SORT & SHOW DEDICATED BUTTON
-        -- ----------------------------------------------------
-        if originalEUISortOnClick then
-            euiSortBtn:SetScript("OnClick", originalEUISortOnClick)
-        end
-        if originalEUISortOnEnter then
-            euiSortBtn:SetScript("OnEnter", originalEUISortOnEnter)
-        end
-
-        if sortBtn and euiSortBtn:IsShown() then
-            local parent = euiSortBtn:GetParent() or _G["EUI_Bags"]
-            sortBtn:SetParent(parent)
-            sortBtn:ClearAllPoints()
-            sortBtn:SetPoint("RIGHT", euiSortBtn, "LEFT", -4, 0)
-            sortBtn:SetFrameLevel((euiSortBtn:GetFrameLevel() or 10) + 1)
-            sortBtn:Show()
-        elseif sortBtn and not (_G["EUI_Bags"]:IsShown()) then
-            sortBtn:Hide()
-        end
+    if sortBtn then
+        sortBtn:Hide()
     end
 end
 
 local function UpdateButtonAnchor()
+    local conflictChoice = (DQ.ConflictResolver and DQ.ConflictResolver.GetChoice and DQ.ConflictResolver:GetChoice("bagSort"))
+    if conflictChoice == "Disabled" then
+        if sortBtn then sortBtn:Hide() end
+        return
+    end
+
     if IsEllesmereBagsLoaded() then
         DQ.BagSort:UpdateEllesmereIntegration()
-        if DQ.Config:Get("automation", "overrideEllesmereSort") ~= false then
+        if conflictChoice == "External" or DQ.Config:Get("automation", "overrideEllesmereSort") ~= false then
             return
         end
     end
@@ -662,7 +657,7 @@ local function CreateBagSortButton()
 
         local L = DQ.L or {}
         GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
-        GameTooltip:AddLine(L["BAG_SORT_TITLE"] or "|cff00e5ffDistractionQoL — Orden Inverso & Materiales|r")
+        GameTooltip:AddLine(L["BAG_SORT_TITLE"] or "|cff00e5ffDistractionQoL - Orden Inverso & Materiales|r")
         GameTooltip:AddLine(L["BAG_SORT_DESC_1"] or "|cffffcc001.|r Mueve materiales de profesión a la bolsa de materiales.", 1, 1, 1)
         GameTooltip:AddLine(L["BAG_SORT_DESC_2"] or "|cffffcc002.|r Si sobran materiales, los coloca arriba del todo.", 1, 1, 1)
         GameTooltip:AddLine(L["BAG_SORT_DESC_3"] or "|cffffcc003.|r Resto de objetos (equipo, consumibles) van abajo del todo.", 1, 1, 1)

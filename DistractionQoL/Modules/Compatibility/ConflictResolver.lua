@@ -27,10 +27,8 @@ local CONFLICT_DEFINITIONS = {
         icon = "Interface\\Icons\\Trade_BlackSmithing",
         detectConflict = function()
             -- 1. EllesmereUI check
-            if _G["EllesmereUIDB"] and _G["EllesmereUIDB"].autoRepair ~= false then
-                if C_AddOns and (C_AddOns.IsAddOnLoaded("EllesmereUIQoL") or C_AddOns.IsAddOnLoaded("EllesmereUI")) then
-                    return "EllesmereUI"
-                end
+            if C_AddOns and (C_AddOns.IsAddOnLoaded("EllesmereUIQoL") or C_AddOns.IsAddOnLoaded("EllesmereUI")) then
+                return "EllesmereUI"
             end
             -- 2. ElvUI check
             if _G["ElvUI"] then
@@ -48,10 +46,8 @@ local CONFLICT_DEFINITIONS = {
         icon = "Interface\\Icons\\INV_Misc_Coin_02",
         detectConflict = function()
             -- 1. EllesmereUI check
-            if _G["EllesmereUIDB"] and _G["EllesmereUIDB"].autoSellJunk ~= false then
-                if C_AddOns and (C_AddOns.IsAddOnLoaded("EllesmereUIQoL") or C_AddOns.IsAddOnLoaded("EllesmereUIBags") or C_AddOns.IsAddOnLoaded("EllesmereUI")) then
-                    return "EllesmereUI"
-                end
+            if C_AddOns and (C_AddOns.IsAddOnLoaded("EllesmereUIQoL") or C_AddOns.IsAddOnLoaded("EllesmereUIBags") or C_AddOns.IsAddOnLoaded("EllesmereUI")) then
+                return "EllesmereUI"
             end
             -- 2. ElvUI check
             if _G["ElvUI"] then
@@ -69,17 +65,12 @@ local CONFLICT_DEFINITIONS = {
         icon = "Interface\\Icons\\INV_Misc_Bag_10_Blue",
         detectConflict = function()
             -- 1. EllesmereUI check
-            if _G["EllesmereUIDB"] and _G["EllesmereUIDB"].quickLoot == true then
-                if C_AddOns and C_AddOns.IsAddOnLoaded("EllesmereUIQoL") then
-                    return "EllesmereUI"
-                end
+            if C_AddOns and (C_AddOns.IsAddOnLoaded("EllesmereUIQoL") or C_AddOns.IsAddOnLoaded("EllesmereUI")) then
+                return "EllesmereUI"
             end
             -- 2. ElvUI check
             if _G["ElvUI"] then
-                local E = _G["ElvUI"][1]
-                if E and E.db and E.db.general and E.db.general.lootRoll == true then
-                    return "ElvUI"
-                end
+                return "ElvUI"
             end
             return nil
         end,
@@ -90,10 +81,12 @@ local CONFLICT_DEFINITIONS = {
         icon = "Interface\\Icons\\INV_Misc_Eye_01",
         detectConflict = function()
             -- 1. EllesmereUI check
-            if _G["EllesmereUIDB"] and (_G["EllesmereUIDB"].skipCinematics or _G["EllesmereUIDB"].skipCinematicsAuto) then
-                if C_AddOns and (C_AddOns.IsAddOnLoaded("EllesmereUIQoL") or C_AddOns.IsAddOnLoaded("EllesmereUI")) then
-                    return "EllesmereUI"
-                end
+            if C_AddOns and (C_AddOns.IsAddOnLoaded("EllesmereUIQoL") or C_AddOns.IsAddOnLoaded("EllesmereUI")) then
+                return "EllesmereUI"
+            end
+            -- 2. ElvUI check
+            if _G["ElvUI"] then
+                return "ElvUI"
             end
             return nil
         end,
@@ -104,7 +97,7 @@ local CONFLICT_DEFINITIONS = {
         icon = "Interface\\Icons\\INV_Misc_Bag_08",
         detectConflict = function()
             -- 1. EllesmereUI check
-            if _G["EUI_Bags"] ~= nil and C_AddOns and C_AddOns.IsAddOnLoaded("EllesmereUIBags") then
+            if _G["EUI_Bags"] ~= nil or (C_AddOns and C_AddOns.IsAddOnLoaded("EllesmereUIBags")) then
                 return "EllesmereUI"
             end
             -- 2. ElvUI check
@@ -160,24 +153,134 @@ function DQ.ConflictResolver:GetDontAskAgain(featureKey)
     return db.dontAskAgain[featureKey] == true
 end
 
+-- Synchronizes feature state across DistractionQoL and external addons (EllesmereUI / ElvUI)
+function DQ.ConflictResolver:ApplyHandover(featureKey, choice, extAddon)
+    extAddon = extAddon or self:DetectConflict(featureKey)
+
+    if featureKey == "fastLoot" then
+        if choice == "DistractionQoL" then
+            DQ.Config:Set("automation", "fastLoot", true)
+            if extAddon == "EllesmereUI" and _G["EllesmereUIDB"] then
+                _G["EllesmereUIDB"].quickLoot = false
+                if _G["EllesmereUI"] and _G["EllesmereUI"]._applyQuickLoot then
+                    pcall(_G["EllesmereUI"]._applyQuickLoot)
+                end
+            end
+        elseif choice == "External" then
+            DQ.Config:Set("automation", "fastLoot", false)
+            if extAddon == "EllesmereUI" and _G["EllesmereUIDB"] then
+                _G["EllesmereUIDB"].quickLoot = true
+                if _G["EllesmereUI"] and _G["EllesmereUI"]._applyQuickLoot then
+                    pcall(_G["EllesmereUI"]._applyQuickLoot)
+                end
+            end
+        elseif choice == "Disabled" then
+            DQ.Config:Set("automation", "fastLoot", false)
+            if extAddon == "EllesmereUI" and _G["EllesmereUIDB"] then
+                _G["EllesmereUIDB"].quickLoot = false
+                if _G["EllesmereUI"] and _G["EllesmereUI"]._applyQuickLoot then
+                    pcall(_G["EllesmereUI"]._applyQuickLoot)
+                end
+            end
+        end
+
+    elseif featureKey == "autoSkipCinematics" then
+        if choice == "DistractionQoL" then
+            DQ.Config:Set("automation", "autoSkipCinematics", true)
+            if extAddon == "EllesmereUI" and _G["EllesmereUIDB"] then
+                _G["EllesmereUIDB"].skipCinematicsAuto = false
+            end
+        elseif choice == "External" then
+            DQ.Config:Set("automation", "autoSkipCinematics", false)
+            if extAddon == "EllesmereUI" and _G["EllesmereUIDB"] then
+                _G["EllesmereUIDB"].skipCinematics = true
+                _G["EllesmereUIDB"].skipCinematicsAuto = true
+            end
+        elseif choice == "Disabled" then
+            DQ.Config:Set("automation", "autoSkipCinematics", false)
+            if extAddon == "EllesmereUI" and _G["EllesmereUIDB"] then
+                _G["EllesmereUIDB"].skipCinematicsAuto = false
+            end
+        end
+
+    elseif featureKey == "autoRepair" then
+        if choice == "DistractionQoL" then
+            DQ.Config:Set("automation", "autoRepair", true)
+            if extAddon == "EllesmereUI" and _G["EllesmereUIDB"] then
+                _G["EllesmereUIDB"].autoRepair = false
+            end
+        elseif choice == "External" then
+            DQ.Config:Set("automation", "autoRepair", false)
+            if extAddon == "EllesmereUI" and _G["EllesmereUIDB"] then
+                _G["EllesmereUIDB"].autoRepair = true
+            end
+        elseif choice == "Disabled" then
+            DQ.Config:Set("automation", "autoRepair", false)
+            if extAddon == "EllesmereUI" and _G["EllesmereUIDB"] then
+                _G["EllesmereUIDB"].autoRepair = false
+            end
+        end
+
+    elseif featureKey == "autoSellJunk" then
+        if choice == "DistractionQoL" then
+            DQ.Config:Set("automation", "autoSellJunk", true)
+            if extAddon == "EllesmereUI" and _G["EllesmereUIDB"] then
+                _G["EllesmereUIDB"].autoSellJunk = false
+            end
+        elseif choice == "External" then
+            DQ.Config:Set("automation", "autoSellJunk", false)
+            if extAddon == "EllesmereUI" and _G["EllesmereUIDB"] then
+                _G["EllesmereUIDB"].autoSellJunk = true
+            end
+        elseif choice == "Disabled" then
+            DQ.Config:Set("automation", "autoSellJunk", false)
+            if extAddon == "EllesmereUI" and _G["EllesmereUIDB"] then
+                _G["EllesmereUIDB"].autoSellJunk = false
+            end
+        end
+
+    elseif featureKey == "bagSort" then
+        if choice == "DistractionQoL" then
+            DQ.Config:Set("automation", "bagSortButton", true)
+            DQ.Config:Set("automation", "overrideEllesmereSort", true)
+        elseif choice == "External" then
+            DQ.Config:Set("automation", "overrideEllesmereSort", false)
+        elseif choice == "Disabled" then
+            DQ.Config:Set("automation", "bagSortButton", false)
+            DQ.Config:Set("automation", "overrideEllesmereSort", false)
+        end
+        if DQ.BagSort and DQ.BagSort.UpdateEllesmereIntegration then
+            DQ.BagSort:UpdateEllesmereIntegration()
+        end
+        if DQ.BagSort and DQ.BagSort.UpdateBagButtonVisibility then
+            DQ.BagSort:UpdateBagButtonVisibility()
+        end
+    end
+end
+
 function DQ.ConflictResolver:SetChoice(featureKey, choice, dontAskAgain)
     local db = EnsureDB()
     db.choices[featureKey] = choice
     if dontAskAgain ~= nil then
         db.dontAskAgain[featureKey] = dontAskAgain and true or false
     end
+    self:ApplyHandover(featureKey, choice)
 end
 
 function DQ.ConflictResolver:ResetChoice(featureKey)
     local db = EnsureDB()
     db.choices[featureKey] = nil
     db.dontAskAgain[featureKey] = nil
+    self:ApplyHandover(featureKey, "DistractionQoL")
 end
 
 function DQ.ConflictResolver:ResetAllChoices()
     local db = EnsureDB()
     db.choices = {}
     db.dontAskAgain = {}
+    for key in pairs(CONFLICT_DEFINITIONS) do
+        self:ApplyHandover(key, "DistractionQoL")
+    end
     local L = DQ.L or {}
     PrintMsg(L["MSG_CONFLICTS_RESET"] or "Se han restablecido todas las elecciones de compatibilidad. Se te volverá a preguntar en caso de conflicto.")
 end
@@ -231,7 +334,7 @@ local function CreateConflictDialog()
     -- Header Title
     local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     title:SetPoint("LEFT", headerBar, "LEFT", 10, 0)
-    title:SetText("|cff00e5ffDistractionQoL|r — |cffffffffConflicto de Funcionalidad|r")
+    title:SetText("|cff00e5ffDistractionQoL|r - |cffffffffConflicto de Funcionalidad|r")
     f.title = title
 
     -- Close Button (X)
@@ -240,7 +343,7 @@ local function CreateConflictDialog()
     closeBtn:SetPoint("RIGHT", headerBar, "RIGHT", -4, 0)
     closeBtn:SetNormalFontObject("GameFontNormalLarge")
     closeBtn:SetHighlightFontObject("GameFontHighlightLarge")
-    closeBtn:SetText("×")
+    closeBtn:SetText("X")
     closeBtn:SetScript("OnClick", function()
         f:Hide()
         if currentRequest and currentRequest.callback then
@@ -381,13 +484,13 @@ function DQ.ConflictResolver:ProcessNextDialog()
     -- Set explanation
     local extName = currentRequest.externalAddon or "EllesmereUI / ElvUI"
     if isSpanish then
-        f.title:SetText("|cff00e5ffDistractionQoL|r — |cffffffffConflicto Detectado|r")
+        f.title:SetText("|cff00e5ffDistractionQoL|r - |cffffffffConflicto Detectado|r")
         f.descText:SetText(string.format("Se detectó que |cffffcc00%s|r también tiene habilitada la función de |cffffffff%s|r.\n¿Qué addon prefieres que realice esta acción?", extName, featName))
         f.btnDQ.text:SetText("Usar DistractionQoL")
         f.btnExt.text:SetText("Usar " .. extName)
         f.cbDontAsk.text:SetText("Recordar mi elección (No volver a preguntar)")
     else
-        f.title:SetText("|cff00e5ffDistractionQoL|r — |cffffffffFeature Conflict Detected|r")
+        f.title:SetText("|cff00e5ffDistractionQoL|r - |cffffffffFeature Conflict Detected|r")
         f.descText:SetText(string.format("|cffffcc00%s|r also has |cffffffff%s|r enabled.\nWhich addon would you prefer to handle this action?", extName, featName))
         f.btnDQ.text:SetText("Use DistractionQoL")
         f.btnExt.text:SetText("Use " .. extName)
@@ -419,6 +522,12 @@ end
 -- If user already chose with dontAskAgain: honors the choice immediately.
 -- If conflict requires user decision: shows dialog, saves choice, and runs selected branch.
 function DQ.ConflictResolver:CheckAndExecute(featureKey, onDistractionQoL, onExternal)
+    local choice = self:GetChoice(featureKey)
+    if choice == "Disabled" then
+        -- Feature is explicitly disabled by user in Compatibility
+        return
+    end
+
     local externalAddon = self:DetectConflict(featureKey)
     if not externalAddon then
         -- No conflicting addon active for this feature
@@ -426,10 +535,9 @@ function DQ.ConflictResolver:CheckAndExecute(featureKey, onDistractionQoL, onExt
         return
     end
 
-    local choice = self:GetChoice(featureKey)
     local dontAsk = self:GetDontAskAgain(featureKey)
 
-    if dontAsk and choice then
+    if (dontAsk and choice) or choice == "External" or choice == "DistractionQoL" then
         if choice == "DistractionQoL" then
             if onDistractionQoL then onDistractionQoL() end
         else

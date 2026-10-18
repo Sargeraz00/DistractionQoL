@@ -1,10 +1,10 @@
 ## Interface: 120105, 120100, 120000, 110100
 ## Title: |cff00e5ffDistractionQoL|r
-## Notes: Ultra-lightweight Raider Quality-of-Life & Performance Toolkit.
-## Notes-esES: Herramientas ultraligeras de QoL y rendimiento para Raiders (Anti-liberar, Flujo de Raid, Automatizaciones, FPS).
-## Notes-esMX: Herramientas ultraligeras de QoL y rendimiento para Raiders (Anti-liberar, Flujo de Raid, Automatizaciones, FPS).
+## Notes: Essential Quality-of-Life, readiness and performance toolkit for Mythic+ and Raid.
+## Notes-esES: Herramientas esenciales de calidad de vida, preparación y rendimiento para Míticas+ y Raid.
+## Notes-esMX: Herramientas esenciales de calidad de vida, preparación y rendimiento para Míticas+ y Raid.
 ## Author: Sargeraz
-## Version: 2.1.0
+## Version: 3.1.1
 ## SavedVariables: DistractionQoLDB
 ## IconTexture: Interface\Icons\Spell_Shadow_DeathScream
 ## Category: Combat
@@ -43,6 +43,12 @@ Modules\MythicPlus\WipeRelease.lua
 Modules\Tooltip\TargetedBy.lua
 
 # --- UI & Presentation Layer ---
+UI\Components.lua
+UI\Tabs\TabRelease.lua
+UI\Tabs\TabRaidFlow.lua
+UI\Tabs\TabAutomations.lua
+UI\Tabs\TabPerformance.lua
+UI\Tabs\TabCompatibility.lua
 UI\ConfigPanel.lua
 UI\Wizard.lua
 

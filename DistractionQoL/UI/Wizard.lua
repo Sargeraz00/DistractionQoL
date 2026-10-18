@@ -1,7 +1,7 @@
 -- Wizard.lua
 -- First-Time Setup Wizard for DistractionQoL
 -- Provides a sleek, step-by-step interactive onboarding experience
--- Detects existing addons (EllesmereUI, NaowhUI, ElvUI) and resolves conflicts upfront
+-- Written with player-first UX, zero obscure jargon, and full multi-language support (ES / EN)
 
 local addonName, DQ = ...
 
@@ -72,17 +72,18 @@ end
 
 -- Create step indicator bar
 local function CreateStepBar(parent, count)
+    local L = DQ.L or {}
     local stepBar = CreateFrame("Frame", nil, parent)
     stepBar:SetSize(600, 26)
     stepBar:SetPoint("TOP", parent, "TOP", 0, -38)
 
     local tabs = {}
     local labels = {
-        "1. Bienvenida",
-        "2. Anti-Liberar",
-        "3. Flujo Raid",
-        "4. Automatizaciones",
-        "5. Inventario",
+        L["WIZ_STEP_1"] or "1. Bienvenida",
+        L["WIZ_STEP_2"] or "2. Anti-Liberar",
+        L["WIZ_STEP_3"] or "3. Flujo Raid",
+        L["WIZ_STEP_4"] or "4. Utilidades",
+        L["WIZ_STEP_5"] or "5. Inventario",
     }
 
     local btnW = 114
@@ -120,6 +121,8 @@ end
 -- Main Wizard Window Builder
 local function BuildWizardWindow()
     if wizardFrame then return wizardFrame end
+
+    local L = DQ.L or {}
 
     local f = CreateFrame("Frame", "DistractionQoLWizardFrame", UIParent, "BackdropTemplate")
     f:SetSize(660, 480)
@@ -159,16 +162,19 @@ local function BuildWizardWindow()
     -- Header Title
     local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetPoint("LEFT", headerBar, "LEFT", 14, 0)
-    title:SetText("|cff00e5ffDistractionQoL|r — |cffffffffAsistente de Configuración Inicial|r")
+    title:SetText(L["WIZ_TITLE"] or "|cff00e5ffDistractionQoL|r - |cffffffffAsistente de Configuración|r")
 
-    -- Close Button (X)
-    local closeBtn = CreateFrame("Button", nil, f)
-    closeBtn:SetSize(24, 24)
+    -- Close Button (X) - clean standard ASCII, fully vector-styled
+    local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+    closeBtn:SetSize(22, 22)
     closeBtn:SetPoint("RIGHT", headerBar, "RIGHT", -6, 0)
-    closeBtn:SetNormalFontObject("GameFontNormalLarge")
-    closeBtn:SetHighlightFontObject("GameFontHighlightLarge")
-    closeBtn:SetText("×")
     closeBtn:SetScript("OnClick", function() f:Hide() end)
+    local xText = closeBtn:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    xText:SetPoint("CENTER", 0, 0)
+    xText:SetText("|cffaaaaaaX|r")
+    closeBtn.xText = xText
+    closeBtn:HookScript("OnEnter", function(self) if self.xText then self.xText:SetText("|cffff3333X|r") end end)
+    closeBtn:HookScript("OnLeave", function(self) if self.xText then self.xText:SetText("|cffaaaaaaX|r") end end)
 
     -- Step Indicator Bar
     local stepBar = CreateStepBar(f, totalSteps)
@@ -192,21 +198,21 @@ local function BuildWizardWindow()
     local pages = {}
 
     -- ==========================================================
-    -- PAGE 1: BIENVENIDA & FILOSOFÍA
+    -- PAGE 1: BIENVENIDA & VENTAJAS
     -- ==========================================================
     local p1 = CreateFrame("Frame", nil, contentBox)
     p1:SetAllPoints()
 
     local p1Title = p1:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     p1Title:SetPoint("TOPLEFT", p1, "TOPLEFT", 16, -16)
-    p1Title:SetText("|cff00e5ffBienvenido a DistractionQoL v2.1|r")
+    p1Title:SetText("|cff00e5ff" .. (L["WIZ_P1_TITLE"] or "Bienvenido a DistractionQoL v3.1.1") .. "|r")
 
     local p1Sub = p1:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     p1Sub:SetPoint("TOPLEFT", p1Title, "BOTTOMLEFT", 0, -8)
     p1Sub:SetPoint("RIGHT", p1, "RIGHT", -16, 0)
     p1Sub:SetJustifyH("LEFT")
     p1Sub:SetWordWrap(true)
-    p1Sub:SetText("Un kit de utilidades de alto rendimiento y anti-distracción diseñado específicamente para jugadores de |cffffcc00Raid Mítica|r y |cffffcc00Míticas+|r.\n\nEste asistente te guiará en menos de 1 minuto para activar las funciones que necesitas y configurar la compatibilidad con otros addons instalados en tu interfaz.")
+    p1Sub:SetText(L["WIZ_P1_DESC"] or "Herramientas esenciales de calidad de vida y preparación para jugadores de Míticas+ y Raid.")
 
     local p1Card = CreateFrame("Frame", nil, p1, "BackdropTemplate")
     p1Card:SetPoint("TOPLEFT", p1Sub, "BOTTOMLEFT", 0, -14)
@@ -226,12 +232,15 @@ local function BuildWizardWindow()
     p1List:SetJustifyH("LEFT")
     p1List:SetJustifyV("TOP")
     p1List:SetWordWrap(true)
-    p1List:SetText("|cff00ff00⚡ Principios de Ingeniería Limpia de DistractionQoL:|r\n\n" ..
-        "• |cffffffff0% de impacto en FPS:|r Todo es 100% conducido por eventos. Cero bucles OnUpdate en combate.\n" ..
-        "• |cffffffffZero-Taint:|r Compatible y seguro con el motor de WoW 12.1.5 (Midnight).\n" ..
-        "• |cffffffffIntegración Nativa:|r Coexiste fluidamente con EllesmereUI, NaowhUI y ElvUI sin pisar sus opciones.\n" ..
-        "• |cffffffffUltraligero:|r Menos de 100 KB de memoria total en uso.\n\n" ..
-        "Haz clic en |cff00e5ff[Siguiente ►]|r para comenzar a personalizar tu experiencia.")
+
+    local p1BoxTitle = L["WIZ_P1_BOX_TITLE"] or "Ventajas de DistractionQoL:"
+    local p1Item1 = L["WIZ_P1_ITEM_1"] or "|cff00e5ff*|r Máximo rendimiento: Diseñado para mantener tus FPS al máximo, sin ralentizaciones en combate."
+    local p1Item2 = L["WIZ_P1_ITEM_2"] or "|cff00e5ff*|r Sin bloqueos de interfaz: Funciona fluidamente sin congelar tus barras ni provocar errores en combate."
+    local p1Item3 = L["WIZ_P1_ITEM_3"] or "|cff00e5ff*|r Compatibilidad total: Detecta y coexiste sin conflictos con EllesmereUI, ElvUI y NaowhUI."
+    local p1Item4 = L["WIZ_P1_ITEM_4"] or "|cff00e5ff*|r Carga ultrarrápida: Ocupa una fracción mínima de memoria en comparación con suites pesadas."
+    local p1Footer = L["WIZ_P1_FOOTER"] or "Haz clic en [Siguiente >] para comenzar a personalizar tu experiencia."
+
+    p1List:SetText(string.format("|cff00ff00%s|r\n\n%s\n%s\n%s\n%s\n\n%s", p1BoxTitle, p1Item1, p1Item2, p1Item3, p1Item4, p1Footer))
 
     pages[1] = p1
 
@@ -244,16 +253,16 @@ local function BuildWizardWindow()
 
     local p2Title = p2:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     p2Title:SetPoint("TOPLEFT", p2, "TOPLEFT", 16, -16)
-    p2Title:SetText("|cff00e5ffProtección Anti-Liberar Espíritu (Release Guard)|r")
+    p2Title:SetText("|cff00e5ff" .. (L["WIZ_P2_TITLE"] or "Protección Anti-Liberar Espíritu") .. "|r")
 
     local p2Desc = p2:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     p2Desc:SetPoint("TOPLEFT", p2Title, "BOTTOMLEFT", 0, -6)
     p2Desc:SetPoint("RIGHT", p2, "RIGHT", -16, 0)
     p2Desc:SetJustifyH("LEFT")
     p2Desc:SetWordWrap(true)
-    p2Desc:SetText("Evita clics accidentales en el botón de liberar espíritu durante mazmorras Míticas y encuentros de Raid, evitando perder Battle Rezzes valiosos.")
+    p2Desc:SetText(L["WIZ_P2_DESC"] or "Evita liberar por error durante mazmorras o jefes de banda cuando aún quedan resurrecciones disponibles.")
 
-    -- Comparison box with NaowhUI / Blizzard
+    -- Comparison box
     local p2Box = CreateFrame("Frame", nil, p2, "BackdropTemplate")
     p2Box:SetPoint("TOPLEFT", p2Desc, "BOTTOMLEFT", 0, -12)
     p2Box:SetPoint("RIGHT", p2, "RIGHT", -16, 0)
@@ -272,16 +281,19 @@ local function BuildWizardWindow()
     p2BoxText:SetPoint("BOTTOMRIGHT", p2Box, "BOTTOMRIGHT", -12, 10)
     p2BoxText:SetJustifyH("LEFT")
     p2BoxText:SetWordWrap(true)
-    p2BoxText:SetText("|cffffcc00¿Por qué la protección de DistractionQoL es superior?|r\n" ..
-        "• |cffffffffBypass Instantáneo:|r Mantén |cffffcc00SHIFT|r y haz clic para liberar de inmediato cuando el líder ordene wipe (sin esperar segundos).\n" ..
-        "• |cffffffffFiltro por Dificultad:|r Activo en M+ y Raid (Mítico/Heroico/Normal), pero libre en mundo abierto.\n" ..
-        "• |cffffffffNaowhUI vs DQOL:|r Naowh te obliga a esperar 1.0s manteniendo presionado el botón. DQOL es instantáneo con SHIFT.")
+
+    local p2BoxTitle = L["WIZ_P2_BOX_TITLE"] or "¿Por qué nuestra protección es más práctica?"
+    local p2Item1 = L["WIZ_P2_ITEM_1"] or "|cffffcc00*|r Liberación inmediata con SHIFT: Si el líder pide wipe, mantén presionado SHIFT y haz clic para liberar al instante."
+    local p2Item2 = L["WIZ_P2_ITEM_2"] or "|cffffcc00*|r Sin esperas forzadas: No tienes que mantener presionado un botón por 1 segundo como en otros addons."
+    local p2Item3 = L["WIZ_P2_ITEM_3"] or "|cffffcc00*|r Control por dificultad: Activo en M+ y Raid, pero libre e inactivo en mundo abierto."
+
+    p2BoxText:SetText(string.format("|cffffcc00%s|r\n\n%s\n%s\n%s", p2BoxTitle, p2Item1, p2Item2, p2Item3))
 
     -- Checkboxes
     local cbDungeons = CreateFrame("CheckButton", "DQWizCBDungeons", p2, "UICheckButtonTemplate")
     cbDungeons:SetPoint("TOPLEFT", p2Box, "BOTTOMLEFT", 0, -12)
     cbDungeons.text = _G[cbDungeons:GetName() .. "Text"]
-    cbDungeons.text:SetText("Activar en Mazmorras (M+ / Heroicas)")
+    cbDungeons.text:SetText(L["WIZ_P2_CB_DUNGEONS"] or "Activar en Mazmorras (M+ / Heroicas / Profundidades)")
     cbDungeons:SetChecked(DQ.Config:Get("releaseGuard", "dungeons"))
     cbDungeons:SetScript("OnClick", function(self)
         DQ.Config:Set("releaseGuard", "dungeons", self:GetChecked())
@@ -290,7 +302,7 @@ local function BuildWizardWindow()
     local cbRaids = CreateFrame("CheckButton", "DQWizCBRaids", p2, "UICheckButtonTemplate")
     cbRaids:SetPoint("TOPLEFT", cbDungeons, "BOTTOMLEFT", 0, -4)
     cbRaids.text = _G[cbRaids:GetName() .. "Text"]
-    cbRaids.text:SetText("Activar en Bandas (Mítico / Heroico / Normal)")
+    cbRaids.text:SetText(L["WIZ_P2_CB_RAIDS"] or "Activar en Bandas (Mítico / Heroico / Normal)")
     cbRaids:SetChecked(DQ.Config:Get("releaseGuard", "raids", "enabled"))
     cbRaids:SetScript("OnClick", function(self)
         DQ.Config:Set("releaseGuard", "raids", "enabled", self:GetChecked())
@@ -299,9 +311,9 @@ local function BuildWizardWindow()
     -- Sound row
     local soundRowLbl = p2:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     soundRowLbl:SetPoint("TOPLEFT", cbRaids, "BOTTOMLEFT", 4, -10)
-    soundRowLbl:SetText("Audio de Alerta:")
+    soundRowLbl:SetText(L["WIZ_P2_SOUND_LABEL"] or "Audio de Alerta:")
 
-    local btnTestSound = CreateWizardButton(p2, "▶ Probar Audio", 120, 22)
+    local btnTestSound = CreateWizardButton(p2, L["WIZ_P2_BTN_TEST"] or "Probar Sonido", 120, 22)
     btnTestSound:SetPoint("LEFT", soundRowLbl, "RIGHT", 14, 0)
     btnTestSound:SetScript("OnClick", function()
         DQ.Alert:PlaySound()
@@ -309,12 +321,13 @@ local function BuildWizardWindow()
 
     local soundHint = p2:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     soundHint:SetPoint("LEFT", btnTestSound, "RIGHT", 12, 0)
-    soundHint:SetText(DQ.Alert:IsDistractionGuild() and "|cff00ff00[Easter Egg Activo]|r Hermandad Distraction de Quel'Thalas." or "Alarma táctica limpia de WoW activa.")
+    local isEasterEgg = DQ.Alert and DQ.Alert.IsDistractionGuild and DQ.Alert:IsDistractionGuild()
+    soundHint:SetText(isEasterEgg and "|cff00ff00[Easter Egg]|r Distraction (Quel'Thalas)" or "|cff00e5ffRaid Alert (Blizzard)|r")
 
     pages[2] = p2
 
     -- ==========================================================
-    -- PAGE 3: FLUJO DE RAID & ANTI-DISTRACCIÓN
+    -- PAGE 3: PREPARACIÓN DE BANDA & ALERTAS
     -- ==========================================================
     local p3 = CreateFrame("Frame", nil, contentBox)
     p3:SetAllPoints()
@@ -322,53 +335,71 @@ local function BuildWizardWindow()
 
     local p3Title = p3:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     p3Title:SetPoint("TOPLEFT", p3, "TOPLEFT", 16, -16)
-    p3Title:SetText("|cff00e5ffFlujo de Raid & Anti-Distracción|r")
+    p3Title:SetText("|cff00e5ff" .. (L["WIZ_P3_TITLE"] or "Flujo de Banda y Alertas") .. "|r")
 
     local p3Desc = p3:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     p3Desc:SetPoint("TOPLEFT", p3Title, "BOTTOMLEFT", 0, -6)
     p3Desc:SetPoint("RIGHT", p3, "RIGHT", -16, 0)
     p3Desc:SetJustifyH("LEFT")
     p3Desc:SetWordWrap(true)
-    p3Desc:SetText("Funcionalidades diseñadas para jugadores que usan una segunda pantalla o minimizan el juego mientras se organiza la raid:")
+    p3Desc:SetText(L["WIZ_P3_DESC"] or "Avisos visuales y sonoros para no perder llamadas importantes, incluso si tienes el juego en segundo plano:")
 
     local cbTaskbar = CreateFrame("CheckButton", "DQWizCBTaskbar", p3, "UICheckButtonTemplate")
     cbTaskbar:SetPoint("TOPLEFT", p3Desc, "BOTTOMLEFT", 0, -14)
     cbTaskbar.text = _G[cbTaskbar:GetName() .. "Text"]
-    cbTaskbar.text:SetText("Parpadear icono de Windows en la barra de tareas al Ready Check y Pull Timers (DBM/BigWigs)")
+    cbTaskbar.text:SetText(L["WIZ_P3_CB_TASKBAR"] or "Hacer parpadear la ventana en la barra de tareas al iniciar Ready Check o Pull Timers")
     cbTaskbar:SetChecked(DQ.Config:Get("raidFlow", "flashTaskbar"))
     cbTaskbar:SetScript("OnClick", function(self)
         DQ.Config:Set("raidFlow", "flashTaskbar", self:GetChecked())
     end)
 
     local cbReadyPing = CreateFrame("CheckButton", "DQWizCBReadyPing", p3, "UICheckButtonTemplate")
-    cbReadyPing:SetPoint("TOPLEFT", cbTaskbar, "BOTTOMLEFT", 0, -8)
+    cbReadyPing:SetPoint("TOPLEFT", cbTaskbar, "BOTTOMLEFT", 0, -6)
     cbReadyPing.text = _G[cbReadyPing:GetName() .. "Text"]
-    cbReadyPing.text:SetText("Reproducir ping sonoro por el canal Maestro al Ready Check (incluso si el juego está en segundo plano)")
+    cbReadyPing.text:SetText(L["WIZ_P3_CB_SOUND"] or "Alerta sonora prioritaria en Ready Check (audible con el juego minimizado)")
     cbReadyPing:SetChecked(DQ.Config:Get("raidFlow", "readyCheckSound"))
     cbReadyPing:SetScript("OnClick", function(self)
         DQ.Config:Set("raidFlow", "readyCheckSound", self:GetChecked())
     end)
 
     local cbConsumables = CreateFrame("CheckButton", "DQWizCBConsumables", p3, "UICheckButtonTemplate")
-    cbConsumables:SetPoint("TOPLEFT", cbReadyPing, "BOTTOMLEFT", 0, -8)
+    cbConsumables:SetPoint("TOPLEFT", cbReadyPing, "BOTTOMLEFT", 0, -6)
     cbConsumables.text = _G[cbConsumables:GetName() .. "Text"]
-    cbConsumables.text:SetText("Auditoría de Consumibles Pre-Pull: Avisa en chat si te falta Comida, Frasco, Runa o Aceite de arma")
+    cbConsumables.text:SetText(L["WIZ_P3_CB_CONSUMABLES"] or "Avisar en chat si te falta comida, frasco, runa o mejora de arma antes del combate")
     cbConsumables:SetChecked(DQ.Config:Get("raidFlow", "checkConsumables"))
     cbConsumables:SetScript("OnClick", function(self)
         DQ.Config:Set("raidFlow", "checkConsumables", self:GetChecked())
     end)
 
+    local cbExpiring = CreateFrame("CheckButton", "DQWizCBExpiring", p3, "UICheckButtonTemplate")
+    cbExpiring:SetPoint("TOPLEFT", cbConsumables, "BOTTOMLEFT", 0, -6)
+    cbExpiring.text = _G[cbExpiring:GetName() .. "Text"]
+    cbExpiring.text:SetText(L["WIZ_P3_CB_EXPIRING"] or "Aviso de consumibles por expirar: Alerta si te quedan menos de 5 minutos de comida o frasco")
+    cbExpiring:SetChecked(DQ.Config:Get("raidFlow", "warnExpiringConsumables"))
+    cbExpiring:SetScript("OnClick", function(self)
+        DQ.Config:Set("raidFlow", "warnExpiringConsumables", self:GetChecked())
+    end)
+
+    local cbLfg = CreateFrame("CheckButton", "DQWizCBLFG", p3, "UICheckButtonTemplate")
+    cbLfg:SetPoint("TOPLEFT", cbExpiring, "BOTTOMLEFT", 0, -6)
+    cbLfg.text = _G[cbLfg:GetName() .. "Text"]
+    cbLfg.text:SetText(L["WIZ_P3_CB_LFG"] or "Alerta de buscador (LFG): Sonido y aviso en barra de tareas al encontrar grupo")
+    cbLfg:SetChecked(DQ.Config:Get("raidFlow", "lfgAlert"))
+    cbLfg:SetScript("OnClick", function(self)
+        DQ.Config:Set("raidFlow", "lfgAlert", self:GetChecked())
+    end)
+
     local p3Note = p3:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    p3Note:SetPoint("TOPLEFT", cbConsumables, "BOTTOMLEFT", 4, -14)
+    p3Note:SetPoint("TOPLEFT", cbLfg, "BOTTOMLEFT", 4, -10)
     p3Note:SetPoint("RIGHT", p3, "RIGHT", -16, 0)
     p3Note:SetJustifyH("LEFT")
     p3Note:SetWordWrap(true)
-    p3Note:SetText("|cff00e5ff* Nota de rendimiento:|r El chequeo de consumibles se realiza únicamente en el milisegundo exacto en que se inicia el Ready Check. Consume 0% de CPU durante el combate.")
+    p3Note:SetText(L["WIZ_P3_NOTE"] or "* Todas las revisiones se ejecutan solo en momentos clave, con cero consumo en combate.")
 
     pages[3] = p3
 
     -- ==========================================================
-    -- PAGE 4: AUTOMATIZACIONES & CONFLICT RESOLUTION
+    -- PAGE 4: AUTOMATIZACIONES
     -- ==========================================================
     local p4 = CreateFrame("Frame", nil, contentBox)
     p4:SetAllPoints()
@@ -376,28 +407,28 @@ local function BuildWizardWindow()
 
     local p4Title = p4:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     p4Title:SetPoint("TOPLEFT", p4, "TOPLEFT", 16, -16)
-    p4Title:SetText("|cff00e5ffAutomatizaciones de Calidad de Vida (QoL)|r")
+    p4Title:SetText("|cff00e5ff" .. (L["WIZ_P4_TITLE"] or "Automatizaciones de Calidad de Vida") .. "|r")
 
     local p4Desc = p4:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     p4Desc:SetPoint("TOPLEFT", p4Title, "BOTTOMLEFT", 0, -6)
     p4Desc:SetPoint("RIGHT", p4, "RIGHT", -16, 0)
     p4Desc:SetJustifyH("LEFT")
     p4Desc:SetWordWrap(true)
-    p4Desc:SetText("DistractionQoL resuelve automáticamente los conflictos si tienes EllesmereUI o ElvUI instalados. Elige qué funciones deseas que controle DQOL:")
+    p4Desc:SetText(L["WIZ_P4_DESC"] or "Ahorra tiempo en tareas mecánicas y repetitivas sin interferir con tus otros addons:")
 
     local autoItems = {
-        { key = "autoRepair", label = "Auto-Reparación de equipo en mercaderes", default = true },
-        { key = "guildRepair", label = "Priorizar fondos de hermandad para reparaciones", default = true },
-        { key = "autoSellJunk", label = "Auto-Venta instantánea de basura gris al hablar con mercader", default = true },
-        { key = "fastLoot", label = "Despojo rápido instantáneo a 0ms (Fast Loot)", default = true },
-        { key = "autoSkipCinematics", label = "Saltar automáticamente cinemáticas y movies ya vistas", default = true },
-        { key = "blockDuels", label = "Bloquear invitaciones a duelos dentro de mazmorras/raid", default = true },
+        { key = "autoRepair", label = L["WIZ_P4_REPAIR"] or "Reparación automática de equipo al hablar con un mercader" },
+        { key = "guildRepair", label = L["WIZ_P4_GUILD_REPAIR"] or "Priorizar fondos de hermandad para reparaciones" },
+        { key = "autoSellJunk", label = L["WIZ_P4_SELL_JUNK"] or "Venta automática de basura gris con un mercader" },
+        { key = "fastLoot", label = L["WIZ_P4_FAST_LOOT"] or "Despojo rápido instantáneo al saquear (Fast Loot)" },
+        { key = "autoSkipCinematics", label = L["WIZ_P4_MOVIES"] or "Saltar automáticamente cinemáticas y videos ya vistos" },
+        { key = "blockDuels", label = L["WIZ_P4_DUELS"] or "Bloquear invitaciones a duelo dentro de mazmorras y bandas" },
     }
 
     local lastAnchor = p4Desc
     for i, item in ipairs(autoItems) do
         local cb = CreateFrame("CheckButton", "DQWizCBAuto" .. i, p4, "UICheckButtonTemplate")
-        cb:SetPoint("TOPLEFT", lastAnchor, "BOTTOMLEFT", 0, (i == 1) and -10 or -4)
+        cb:SetPoint("TOPLEFT", lastAnchor, "BOTTOMLEFT", 0, (i == 1) and -10 or -3)
         cb.text = _G[cb:GetName() .. "Text"]
         cb.text:SetText(item.label)
         cb:SetChecked(DQ.Config:Get("automation", item.key))
@@ -410,10 +441,20 @@ local function BuildWizardWindow()
         lastAnchor = cb
     end
 
+    -- M+ Auto Keystone Slotter
+    local cbKey = CreateFrame("CheckButton", "DQWizCBAutoKey", p4, "UICheckButtonTemplate")
+    cbKey:SetPoint("TOPLEFT", lastAnchor, "BOTTOMLEFT", 0, -3)
+    cbKey.text = _G[cbKey:GetName() .. "Text"]
+    cbKey.text:SetText(L["WIZ_P4_KEYSTONE"] or "M+ Auto-Piedra: Colocar automáticamente la llave en el pedestal")
+    cbKey:SetChecked(DQ.Config:Get("mythicPlus", "autoSlot"))
+    cbKey:SetScript("OnClick", function(self)
+        DQ.Config:Set("mythicPlus", "autoSlot", self:GetChecked())
+    end)
+
     pages[4] = p4
 
     -- ==========================================================
-    -- PAGE 5: INVENTARIO & ORDEN INVERSO
+    -- PAGE 5: INVENTARIO & ORDEN INTELIGENTE
     -- ==========================================================
     local p5 = CreateFrame("Frame", nil, contentBox)
     p5:SetAllPoints()
@@ -421,14 +462,14 @@ local function BuildWizardWindow()
 
     local p5Title = p5:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     p5Title:SetPoint("TOPLEFT", p5, "TOPLEFT", 16, -16)
-    p5Title:SetText("|cff00e5ffOrdenamiento Inverso & Alijo de Reagentes|r")
+    p5Title:SetText("|cff00e5ff" .. (L["WIZ_P5_TITLE"] or "Organización Inteligente de Bolsas") .. "|r")
 
     local p5Desc = p5:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     p5Desc:SetPoint("TOPLEFT", p5Title, "BOTTOMLEFT", 0, -6)
     p5Desc:SetPoint("RIGHT", p5, "RIGHT", -16, 0)
     p5Desc:SetJustifyH("LEFT")
     p5Desc:SetWordWrap(true)
-    p5Desc:SetText("Una de las funciones más queridas: organiza tu inventario de forma lógica sin mezclar materiales con tu equipo:")
+    p5Desc:SetText(L["WIZ_P5_DESC"] or "Mantén tu inventario organizado de forma clara y accesible:")
 
     local p5Box = CreateFrame("Frame", nil, p5, "BackdropTemplate")
     p5Box:SetPoint("TOPLEFT", p5Desc, "BOTTOMLEFT", 0, -12)
@@ -448,15 +489,16 @@ local function BuildWizardWindow()
     p5BoxText:SetPoint("BOTTOMRIGHT", p5Box, "BOTTOMRIGHT", -12, 10)
     p5BoxText:SetJustifyH("LEFT")
     p5BoxText:SetWordWrap(true)
-    p5BoxText:SetText("|cffffcc00¿Cómo opera el Orden Inverso de DistractionQoL?|r\n" ..
-        "1. Detecta todos los materiales de artesanía/profesión y los guarda en la |cff00e5ffBolsa de Reagentes (Bolsa 5)|r.\n" ..
-        "2. Si sobran materiales, los coloca |cffffcc00arriba del todo|r en las bolsas normales.\n" ..
-        "3. El resto de objetos (equipo, pociones, comida) se agrupan ordenados |cff00ff00abajo del todo|r, dejando el centro libre.")
+
+    local p5BoxTitle = L["WIZ_P5_BOX_TITLE"] or "¿Cómo organiza DistractionQoL tus bolsas?"
+    local p5Explanation = L["WIZ_P5_EXPLANATION"] or "1. Mueve materiales de artesanía a tu Bolsa de Componentes.\n2. Los materiales sobrantes se colocan en la parte superior.\n3. Tu equipo y objetos activos se agrupan ordenados en la parte inferior, dejando espacio libre en el centro."
+
+    p5BoxText:SetText(string.format("|cffffcc00%s|r\n\n%s", p5BoxTitle, p5Explanation))
 
     local cbBagBtn = CreateFrame("CheckButton", "DQWizCBBagBtn", p5, "UICheckButtonTemplate")
     cbBagBtn:SetPoint("TOPLEFT", p5Box, "BOTTOMLEFT", 0, -12)
     cbBagBtn.text = _G[cbBagBtn:GetName() .. "Text"]
-    cbBagBtn.text:SetText("Mostrar botón de Orden Inverso en la cabecera de las bolsas de Blizzard")
+    cbBagBtn.text:SetText(L["WIZ_P5_CB_BAG_BTN"] or "Mostrar botón de Orden Inverso en las bolsas de Blizzard")
     cbBagBtn:SetChecked(DQ.Config:Get("automation", "bagSortButton"))
     cbBagBtn:SetScript("OnClick", function(self)
         DQ.Config:Set("automation", "bagSortButton", self:GetChecked())
@@ -468,7 +510,7 @@ local function BuildWizardWindow()
     local cbOverrideEUI = CreateFrame("CheckButton", "DQWizCBOverrideEUI", p5, "UICheckButtonTemplate")
     cbOverrideEUI:SetPoint("TOPLEFT", cbBagBtn, "BOTTOMLEFT", 0, -6)
     cbOverrideEUI.text = _G[cbOverrideEUI:GetName() .. "Text"]
-    cbOverrideEUI.text:SetText("EllesmereUI: Reemplazar su botón de ordenar bolsas con el Orden Inverso de DQOL")
+    cbOverrideEUI.text:SetText(L["WIZ_P5_CB_OVERRIDE_EUI"] or "EllesmereUI: Reemplazar su botón de ordenar con el de DistractionQoL")
     cbOverrideEUI:SetChecked(DQ.Config:Get("automation", "overrideEllesmereSort"))
     cbOverrideEUI:SetScript("OnClick", function(self)
         DQ.Config:Set("automation", "overrideEllesmereSort", self:GetChecked())
@@ -484,27 +526,26 @@ local function BuildWizardWindow()
     -- ==========================================================
     -- BOTTOM ACTION BAR
     -- ==========================================================
-    local btnPrev = CreateWizardButton(f, "◄ Anterior", 110, 28)
+    local btnPrev = CreateWizardButton(f, L["BTN_PREV"] or "< Anterior", 110, 28)
     btnPrev:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 18, 14)
     btnPrev:SetScript("OnClick", function()
         DQ.Wizard:SetStep(currentStep - 1)
     end)
     f.btnPrev = btnPrev
 
-    local btnSkip = CreateWizardButton(f, "Cerrar", 90, 28)
+    local btnSkip = CreateWizardButton(f, L["BTN_CLOSE"] or "Cerrar", 90, 28)
     btnSkip:SetPoint("LEFT", btnPrev, "RIGHT", 8, 0)
     btnSkip:SetScript("OnClick", function()
         f:Hide()
     end)
     f.btnSkip = btnSkip
 
-    local btnNext = CreateWizardButton(f, "Siguiente ►", 140, 28, true)
+    local btnNext = CreateWizardButton(f, L["BTN_NEXT"] or "Siguiente >", 150, 28, true)
     btnNext:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -18, 14)
     btnNext:SetScript("OnClick", function()
         if currentStep < totalSteps then
             DQ.Wizard:SetStep(currentStep + 1)
         else
-            -- Finish installer
             DQ.Wizard:Complete()
         end
     end)
@@ -521,6 +562,7 @@ function DQ.Wizard:SetStep(step)
     currentStep = step
 
     local f = BuildWizardWindow()
+    local L = DQ.L or {}
 
     -- Update pages visibility
     for i, page in ipairs(f.pages) do
@@ -549,23 +591,23 @@ function DQ.Wizard:SetStep(step)
     f.btnPrev:SetAlpha(step > 1 and 1 or 0.4)
 
     if step == totalSteps then
-        f.btnNext.text:SetText("¡Guardar y Finalizar! ✔")
+        f.btnNext.text:SetText(L["BTN_FINISH"] or "Guardar y Finalizar")
     else
-        f.btnNext.text:SetText("Siguiente ►")
+        f.btnNext.text:SetText(L["BTN_NEXT"] or "Siguiente >")
     end
 end
 
 -- Completes wizard and marks installerVersion as finished
 function DQ.Wizard:Complete()
     if not DistractionQoLDB then DistractionQoLDB = {} end
-    DistractionQoLDB.installerVersion = 2
+    DistractionQoLDB.installerVersion = 3
 
     if wizardFrame then
         wizardFrame:Hide()
     end
 
     local L = DQ.L or {}
-    PrintMsg(L["MSG_WIZARD_COMPLETE"] or "¡Configuración completada con éxito! Puedes reabrir este asistente en cualquier momento escribiendo |cffffcc00/qol install|r.")
+    PrintMsg(L["MSG_WIZARD_COMPLETE"] or "Initial setup complete! You can reopen this wizard at any time with /qol install.")
 end
 
 -- Opens the wizard at step 1
@@ -578,7 +620,7 @@ end
 -- Check if installer needs to be shown on login
 function DQ.Wizard:CheckAutoRun()
     local dbVer = (DistractionQoLDB and DistractionQoLDB.installerVersion) or 0
-    if dbVer < 2 then
+    if dbVer < 3 then
         -- Delay 1.5 seconds so all external addon DBs settle cleanly
         C_Timer.After(1.5, function()
             DQ.Wizard:Open()
