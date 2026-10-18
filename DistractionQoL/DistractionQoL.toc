@@ -4,25 +4,41 @@
 ## Notes-esES: Herramientas ultraligeras de QoL y rendimiento para Raiders (Anti-liberar, Flujo de Raid, Automatizaciones, FPS).
 ## Notes-esMX: Herramientas ultraligeras de QoL y rendimiento para Raiders (Anti-liberar, Flujo de Raid, Automatizaciones, FPS).
 ## Author: Sargeraz
-## Version: 2.0.1
+## Version: 2.1.0
 ## SavedVariables: DistractionQoLDB
 ## IconTexture: Interface\Icons\Spell_Shadow_DeathScream
 ## Category: Combat
 ## Category-enUS: Combat
 ## Category-esES: Combate
 ## Category-esMX: Combate
-## OptionalDeps: EllesmereUI, EllesmereUIBags, EllesmereUIBlizzardSkin, ElvUI
+## OptionalDeps: EllesmereUI, EllesmereUIBags, EllesmereUIBlizzardSkin, ElvUI, NaowhUI, NaowhUI_EUI
 
-Locales.lua
-Migration.lua
-Config.lua
-Detection.lua
-Alert.lua
-Hook.lua
-ConflictResolver.lua
-RaidFlow.lua
-Automation.lua
-Optimizer.lua
-BagSort.lua
-UI.lua
-Core.lua
+# --- Core Framework ---
+Core\Locales.lua
+Core\Migration.lua
+Core\Config.lua
+Core\Detection.lua
+
+# --- Compatibility Layer ---
+Modules\Compatibility\ConflictResolver.lua
+
+# --- Feature Modules ---
+Modules\ReleaseGuard\Alert.lua
+Modules\ReleaseGuard\Hook.lua
+
+Modules\RaidFlow\RaidFlow.lua
+
+Modules\Automations\Vendor.lua
+Modules\Automations\FastLoot.lua
+Modules\Automations\Cinematics.lua
+Modules\Automations\SafeResurrect.lua
+Modules\Automations\Automation.lua
+
+Modules\Optimizer\Optimizer.lua
+Modules\BagSort\BagSort.lua
+
+# --- UI & Presentation Layer ---
+UI\ConfigPanel.lua
+
+# --- Core Lifecycle & Dispatcher ---
+Core\Core.lua
