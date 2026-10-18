@@ -105,30 +105,83 @@ alertFrame:SetScript("OnUpdate", function(self, elapsed)
 end)
 
 -- ==========================================================
--- AUDIO PLAYBACK (OGG VORBIS + MP3 WITH MULTI-CHANNEL FALLBACK)
+-- GUILD DETECTION & AUDIO PRESETS
+-- Easter Egg: Guild "Distraction" on Quel'Thalas uses Bane.ogg by default.
+-- Public/CurseForge users get clean tactical Blizzard alert audio by default.
 -- ==========================================================
-function DQ.Alert:PlaySound()
+function DQ.Alert:IsDistractionGuild()
+    if not IsInGuild or not IsInGuild() then return false end
+    local guildName = GetGuildInfo and GetGuildInfo("player")
+    if not guildName then return false end
+    local realm = (GetNormalizedRealmName and GetNormalizedRealmName()) or (GetRealmName and GetRealmName()) or ""
+    realm = realm:gsub("%s+", ""):lower()
+    return (guildName == "Distraction") and (realm:find("quelthalas") ~= nil)
+end
+
+local SOUND_PRESETS = {
+    bane = {
+        name = "Meme: Bane (Distraction)",
+        type = "file",
+        paths = {
+            "Interface\\AddOns\\DistractionQoL\\Media\\Sounds\\Bane.ogg",
+            "Interface\\AddOns\\DistractionQoL\\Bane.ogg",
+            "Interface\\AddOns\\" .. addonName .. "\\Media\\Sounds\\Bane.ogg",
+            "Interface\\AddOns\\" .. addonName .. "\\Bane.ogg",
+            "Interface\\AddOns\\" .. addonName .. "\\Bane.mp3",
+        },
+    },
+    raid_warning = {
+        name = "Raid Warning (Alarma Táctica)",
+        type = "kit",
+        id = (SOUNDKIT and SOUNDKIT.RAID_WARNING) or 567275,
+    },
+    alarm = {
+        name = "Alarma Táctica Digital",
+        type = "kit",
+        id = (SOUNDKIT and SOUNDKIT.ALARM_CLOCK_WARNING_3) or 567451,
+    },
+    bell = {
+        name = "Campana / Ready Check",
+        type = "kit",
+        id = (SOUNDKIT and SOUNDKIT.READY_CHECK) or 8960,
+    },
+}
+
+DQ.Alert.SOUND_PRESETS = SOUND_PRESETS
+
+function DQ.Alert:PlaySound(overrideChoice)
     local soundEnabled = DQ.Config:Get("releaseGuard", "soundEnabled")
     if soundEnabled == nil then
         soundEnabled = DQ.Config:Get("soundEnabled")
     end
     if soundEnabled == false then return false end
 
-    local channels = { "Master", "Dialog", "SFX" }
-
-    for _, path in ipairs(soundPaths) do
-        for _, channel in ipairs(channels) do
-            local success, willPlay = pcall(PlaySoundFile, path, channel)
-            if success and willPlay then
-                return true
-            end
+    local choice = overrideChoice or DQ.Config:Get("releaseGuard", "soundChoice") or "auto"
+    if choice == "auto" then
+        if self:IsDistractionGuild() then
+            choice = "bane"
+        else
+            choice = "raid_warning"
         end
     end
 
-    for _, path in ipairs(soundPaths) do
-        local success, willPlay = pcall(PlaySoundFile, path)
-        if success and willPlay then
-            return true
+    local preset = SOUND_PRESETS[choice] or SOUND_PRESETS["raid_warning"]
+    if preset.type == "kit" then
+        if PlaySound then
+            local ok, willPlay = pcall(PlaySound, preset.id, "Master")
+            if ok and willPlay then return true end
+        end
+    elseif preset.type == "file" then
+        local channels = { "Master", "Dialog", "SFX" }
+        for _, path in ipairs(preset.paths) do
+            for _, channel in ipairs(channels) do
+                local ok, willPlay = pcall(PlaySoundFile, path, channel)
+                if ok and willPlay then return true end
+            end
+        end
+        for _, path in ipairs(preset.paths) do
+            local ok, willPlay = pcall(PlaySoundFile, path)
+            if ok and willPlay then return true end
         end
     end
 

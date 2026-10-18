@@ -17,7 +17,8 @@ local defaultSettings = {
             mythic = true,    -- Mythic raid difficulty
         },
         openWorld = false,    -- Open World (outside instances)
-        soundEnabled = true,  -- Audio alert (Bane.ogg)
+        soundEnabled = true,  -- Master toggle for audio alert
+        soundChoice = "auto", -- "auto" (Bane if Distraction guild on Quel'Thalas, else Raid Warning), "raid_warning", "alarm", "bell", "bane"
     },
 
     -- 2. Raid Flow & Readiness (Anti-Distraction)
@@ -55,6 +56,9 @@ local defaultSettings = {
         choices = {},              -- [featureKey] = "DistractionQoL" or "External"
         dontAskAgain = {},         -- [featureKey] = true/false
     },
+
+    -- 6. Setup Wizard State
+    installerVersion = 0,          -- Version of the completed setup wizard (0 = needs wizard)
 }
 
 -- Recursively copy missing defaults into target table

@@ -39,6 +39,7 @@ Modules\BagSort\BagSort.lua
 
 # --- UI & Presentation Layer ---
 UI\ConfigPanel.lua
+UI\Wizard.lua
 
 # --- Core Lifecycle & Dispatcher ---
 Core\Core.lua

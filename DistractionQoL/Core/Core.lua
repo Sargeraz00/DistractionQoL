@@ -38,6 +38,9 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
         if DQ.UI and DQ.UI.CheckSkinning then
             DQ.UI:CheckSkinning()
         end
+        if DQ.Wizard and DQ.Wizard.CheckAutoRun then
+            DQ.Wizard:CheckAutoRun()
+        end
         local L = DQ.L or {}
         PrintMsg(L["MSG_LOADED"] or "Addon cargado (WoW 12.1.5 Midnight). Escribe |cffffcc00/qol|r para abrir el panel.")
     end
@@ -58,6 +61,11 @@ local function HandleSlashCmd(msg)
     if cmd == "" or cmd == "config" or cmd == "panel" then
         -- Open or toggle configuration console
         DQ.UI:Toggle()
+
+    elseif cmd == "install" or cmd == "wizard" then
+        if DQ.Wizard then
+            DQ.Wizard:Open()
+        end
 
     elseif cmd == "test" then
         PrintMsg(L["MSG_TESTING"] or "Probando aviso visual gigante y audio...")

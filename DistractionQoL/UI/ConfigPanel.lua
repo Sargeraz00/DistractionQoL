@@ -145,12 +145,12 @@ function DQ.UI:CreatePanel()
     -- Top title
     local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetPoint("LEFT", f, "TOPLEFT", 14, -13)
-    title:SetText((L["CONFIG_TITLE"] or "|cff00e5ffDistractionQoL|r") .. " |cff888888v2.0.0|r")
+    title:SetText((L["CONFIG_TITLE"] or "|cff00e5ffDistractionQoL|r") .. " |cff888888v2.1.0|r")
     f.title = title
     f.TitleText = title
 
     -- ==========================================================
-    -- TOP-RIGHT CLOSE BUTTON (Full native & skinning support)
+    -- TOP-RIGHT CLOSE BUTTON & WIZARD SHORTCUT
     -- ==========================================================
     local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
     closeBtn:SetSize(22, 22)
@@ -162,6 +162,27 @@ function DQ.UI:CreatePanel()
     xText:SetPoint("CENTER", 0, 0)
     xText:SetText("|cffaaaaaaX|r")
     closeBtn.xText = xText
+
+    -- Quick Setup Wizard Button in Header
+    local btnWizard = CreateFrame("Button", nil, f, "BackdropTemplate")
+    btnWizard:SetSize(80, 18)
+    btnWizard:SetPoint("RIGHT", closeBtn, "LEFT", -6, 0)
+    btnWizard:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8x8",
+        edgeFile = "Interface\\Buttons\\WHITE8x8",
+        edgeSize = 1,
+        insets = { left = 1, right = 1, top = 1, bottom = 1 },
+    })
+    btnWizard:SetBackdropColor(0.0, 0.40, 0.55, 0.90)
+    btnWizard:SetBackdropBorderColor(0.0, 0.85, 1.0, 0.90)
+    local bwText = btnWizard:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    bwText:SetPoint("CENTER")
+    bwText:SetText("Asistente")
+    btnWizard.text = bwText
+    btnWizard:SetScript("OnClick", function()
+        f:Hide()
+        if DQ.Wizard then DQ.Wizard:Open() end
+    end)
 
     closeBtn:HookScript("OnEnter", function(self)
         if not self.isSkinned and self.xText then self.xText:SetText("|cffff3333X|r") end
@@ -318,6 +339,52 @@ function DQ.UI:CreatePanel()
     soundStatusIcon:SetPoint("LEFT", cbSound.text, "RIGHT", 6, 0)
     soundStatusIcon:SetTexture(ResolveSoundPath(DQ.Config:Get("releaseGuard", "soundEnabled") ~= false))
     f.soundStatusIcon = soundStatusIcon
+
+    -- Sound Presets Selector
+    local lblSoundChoice = pRelease:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    lblSoundChoice:SetPoint("TOPLEFT", pRelease, "TOPLEFT", 10, -244)
+    lblSoundChoice:SetText("Efecto de Audio:")
+
+    local soundButtons = {}
+    local soundOptions = {
+        { key = "auto", label = "Auto", tooltip = "Easter Egg si estás en Distraction (Quel'Thalas), alarma táctica para todos los demás." },
+        { key = "raid_warning", label = "Raid Alert", tooltip = "Alarma clásica limpia de Raid Warning de Blizzard." },
+        { key = "alarm", label = "Alarma Digital", tooltip = "Tono digital táctico." },
+        { key = "bane", label = "Bane Meme", tooltip = "Audio cómico clásico: ¡Burro, sonso, no liberes!" },
+    }
+
+    local function RefreshSoundButtons()
+        local current = DQ.Config:Get("releaseGuard", "soundChoice") or "auto"
+        for _, opt in ipairs(soundOptions) do
+            local b = soundButtons[opt.key]
+            if b then
+                if opt.key == current then
+                    b:SetBackdropColor(0.0, 0.50, 0.65, 0.95)
+                    b:SetBackdropBorderColor(0.0, 0.90, 1.0, 1)
+                    if b.text then b.text:SetTextColor(1, 1, 1, 1) end
+                else
+                    b:SetBackdropColor(0.10, 0.10, 0.14, 0.95)
+                    b:SetBackdropBorderColor(0.20, 0.20, 0.25, 1)
+                    if b.text then b.text:SetTextColor(0.70, 0.70, 0.75, 1) end
+                end
+            end
+        end
+    end
+
+    for i, opt in ipairs(soundOptions) do
+        local btnOpt = CreateFlatButton(pRelease, opt.label, 80, 20)
+        btnOpt:SetPoint("TOPLEFT", pRelease, "TOPLEFT", 105 + (i - 1) * 85, -242)
+        btnOpt:SetScript("OnClick", function()
+            DQ.Config:Set("releaseGuard", "soundChoice", opt.key)
+            RefreshSoundButtons()
+            if DQ.Alert and DQ.Alert.PlaySound then
+                DQ.Alert:PlaySound(opt.key)
+            end
+        end)
+        soundButtons[opt.key] = btnOpt
+    end
+    f.RefreshSoundButtons = RefreshSoundButtons
+    RefreshSoundButtons()
 
     -- ==========================================================
     -- PAGE 2: RAID FLOW & READINESS
