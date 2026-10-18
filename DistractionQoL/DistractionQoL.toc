@@ -37,6 +37,9 @@ Modules\Automations\Automation.lua
 Modules\Optimizer\Optimizer.lua
 Modules\BagSort\BagSort.lua
 
+Modules\Chat\ChatHistory.lua
+Modules\MythicPlus\Keystone.lua
+
 # --- UI & Presentation Layer ---
 UI\ConfigPanel.lua
 UI\Wizard.lua

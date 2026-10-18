@@ -504,8 +504,18 @@ function DQ.UI:CreatePanel()
         end
     end)
 
-    local btnSortNow = CreateFlatButton(pAuto, L["BTN_SORT_BAGS"] or "Ordenar Bolsas Ahora", 200, 24)
-    btnSortNow:SetPoint("TOPLEFT", pAuto, "TOPLEFT", 8, -332)
+    -- 9. Mythic+ Keystone Auto-Slot
+    CreateCheckbox(pAuto, "M+ Auto-Piedra: Insertar automáticamente llave en el pedestal (0ms)", 8, -326, DQ.Config:Get("mythicPlus", "autoSlot"), function(checked)
+        DQ.Config:Set("mythicPlus", "autoSlot", checked)
+    end)
+
+    -- 10. Mythic+ Keystone Announce
+    CreateCheckbox(pAuto, "M+ Anuncio: Notificar al grupo en chat la piedra insertada", 32, -352, DQ.Config:Get("mythicPlus", "announceSlot"), function(checked)
+        DQ.Config:Set("mythicPlus", "announceSlot", checked)
+    end)
+
+    local btnSortNow = CreateFlatButton(pAuto, L["BTN_SORT_BAGS"] or "Ordenar Bolsas Ahora", 180, 22)
+    btnSortNow:SetPoint("TOPLEFT", pAuto, "TOPLEFT", 8, -384)
     btnSortNow:SetScript("OnClick", function()
         if DQ.BagSort then DQ.BagSort:SortBags() end
     end)

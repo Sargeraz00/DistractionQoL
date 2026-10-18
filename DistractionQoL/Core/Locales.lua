@@ -138,6 +138,7 @@ if isSpanish then
     L["MSG_BAG_SORT_CURSOR"] = "Por favor suelta el objeto del cursor antes de ordenar."
     L["MSG_BAG_SORT_BUSY"] = "Ya hay un ordenamiento de bolsas en progreso..."
     L["MSG_BAG_SORT_ALREADY_SORTED"] = "Las bolsas ya están ordenadas correctamente."
+    L["MSG_KEYSTONE_SLOTTED"] = "Piedra insertada: %s (+%d)"
 else
     -- ==========================================================
     -- ENGLISH (enUS / enGB and all other locales)
@@ -269,6 +270,7 @@ else
     L["MSG_BAG_SORT_CURSOR"] = "Please release the item on your cursor before sorting."
     L["MSG_BAG_SORT_BUSY"] = "Bag sorting is already in progress..."
     L["MSG_BAG_SORT_ALREADY_SORTED"] = "Bags are already correctly organized."
+    L["MSG_KEYSTONE_SLOTTED"] = "Keystone slotted: %s (+%d)"
 end
 
 DQ.L = L

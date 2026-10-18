@@ -57,7 +57,18 @@ local defaultSettings = {
         dontAskAgain = {},         -- [featureKey] = true/false
     },
 
-    -- 6. Setup Wizard State
+    -- 6. Chat History (Arrow Up / Down)
+    chat = {
+        historySize = 30,          -- Max commands remembered in circular buffer
+    },
+
+    -- 7. Mythic+ Utilities
+    mythicPlus = {
+        autoSlot = true,           -- Auto-insert keystone at Font of Power
+        announceSlot = true,       -- Announce inserted keystone to group
+    },
+
+    -- 8. Setup Wizard State
     installerVersion = 0,          -- Version of the completed setup wizard (0 = needs wizard)
 }
 

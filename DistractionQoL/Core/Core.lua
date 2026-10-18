@@ -32,6 +32,12 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
         DQ.Automation:Init()
         DQ.Optimizer:Init()
         DQ.BagSort:Init()
+        if DQ.ChatHistory and DQ.ChatHistory.Init then
+            DQ.ChatHistory:Init()
+        end
+        if DQ.Keystone and DQ.Keystone.Init then
+            DQ.Keystone:Init()
+        end
         DQ.UI:RegisterSettingsCategory()
     elseif event == "PLAYER_LOGIN" then
         DQ.Hook:Init()
