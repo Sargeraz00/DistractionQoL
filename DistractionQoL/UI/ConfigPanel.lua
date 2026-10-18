@@ -386,6 +386,16 @@ function DQ.UI:CreatePanel()
     f.RefreshSoundButtons = RefreshSoundButtons
     RefreshSoundButtons()
 
+    -- Checkbox: Auto Release on Full Wipe in M+
+    CreateCheckbox(pRelease, "M+ Wipe Total: Auto-liberar espíritu si muere todo el grupo", 8, -276, DQ.Config:Get("mythicPlus", "autoReleaseOnWipe"), function(checked)
+        DQ.Config:Set("mythicPlus", "autoReleaseOnWipe", checked)
+    end)
+    local wipeDesc = pRelease:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    wipeDesc:SetPoint("TOPLEFT", pRelease, "TOPLEFT", 32, -302)
+    wipeDesc:SetPoint("RIGHT", pRelease, "RIGHT", -12, 0)
+    wipeDesc:SetJustifyH("LEFT")
+    wipeDesc:SetText("|cff888888Desactiva la protección y libera al morir los 5 jugadores para ahorrar tiempo de piedra.|r")
+
     -- ==========================================================
     -- PAGE 2: RAID FLOW & READINESS
     -- ==========================================================
@@ -414,12 +424,32 @@ function DQ.UI:CreatePanel()
         DQ.Config:Set("raidFlow", "checkConsumables", checked)
     end)
 
+    -- Checkbox: Warn Expiring Consumables (< 5 min)
+    CreateCheckbox(pFlow, "Avisar en chat si consumibles expiran en < 5 min fuera de combate", 8, -142, DQ.Config:Get("raidFlow", "warnExpiringConsumables"), function(checked)
+        DQ.Config:Set("raidFlow", "warnExpiringConsumables", checked)
+    end)
+
+    -- Checkbox: LFG Queue Proposal Alert
+    CreateCheckbox(pFlow, "Parpadear barra de tareas y alerta sonora en llamada de buscador (LFG)", 8, -174, DQ.Config:Get("raidFlow", "lfgAlert"), function(checked)
+        DQ.Config:Set("raidFlow", "lfgAlert", checked)
+    end)
+
     -- Manual Consumables Check button
     local btnCheckNow = CreateFlatButton(pFlow, "Revisar Consumibles Ahora", 200, 24)
-    btnCheckNow:SetPoint("TOPLEFT", pFlow, "TOPLEFT", 8, -150)
+    btnCheckNow:SetPoint("TOPLEFT", pFlow, "TOPLEFT", 8, -214)
     btnCheckNow:SetScript("OnClick", function()
         if DQ.RaidFlow then DQ.RaidFlow:CheckConsumables(true) end
     end)
+
+    -- Checkbox: Tooltip Targeted By
+    CreateCheckbox(pFlow, "Tooltip de Mob: Mostrar qué miembros lo están enfocando (Targeted By)", 8, -256, DQ.Config:Get("tooltip", "targetedBy"), function(checked)
+        DQ.Config:Set("tooltip", "targetedBy", checked)
+    end)
+    local ttDesc = pFlow:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    ttDesc:SetPoint("TOPLEFT", pFlow, "TOPLEFT", 32, -282)
+    ttDesc:SetPoint("RIGHT", pFlow, "RIGHT", -12, 0)
+    ttDesc:SetJustifyH("LEFT")
+    ttDesc:SetText("|cff888888Agrega al tooltip del objetivo la cantidad y rol de jugadores que lo tienen en target (ej: 1T 1H 2D).|r")
 
     -- ==========================================================
     -- PAGE 3: AUTOMATIONS

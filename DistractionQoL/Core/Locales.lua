@@ -139,6 +139,10 @@ if isSpanish then
     L["MSG_BAG_SORT_BUSY"] = "Ya hay un ordenamiento de bolsas en progreso..."
     L["MSG_BAG_SORT_ALREADY_SORTED"] = "Las bolsas ya están ordenadas correctamente."
     L["MSG_KEYSTONE_SLOTTED"] = "Piedra insertada: %s (+%d)"
+    L["TOOLTIP_TARGETED_BY"] = "Enfocado por:"
+    L["MSG_FULL_WIPE_RELEASED"] = "¡Wipe total detectado! Liberando espíritu automáticamente para salvar tiempo de la llave."
+    L["MSG_CONSUMABLE_EXPIRING"] = "Aviso de Consumibles: Tu |cffffcc00%s|r expira en |cffff3333%d min|r. Renuévala antes del próximo pull."
+    L["MSG_LFG_PROPOSAL"] = "¡Llamada de Buscador! Tu grupo de mazmorra o banda está listo."
 else
     -- ==========================================================
     -- ENGLISH (enUS / enGB and all other locales)
@@ -271,6 +275,10 @@ else
     L["MSG_BAG_SORT_BUSY"] = "Bag sorting is already in progress..."
     L["MSG_BAG_SORT_ALREADY_SORTED"] = "Bags are already correctly organized."
     L["MSG_KEYSTONE_SLOTTED"] = "Keystone slotted: %s (+%d)"
+    L["TOOLTIP_TARGETED_BY"] = "Targeted by:"
+    L["MSG_FULL_WIPE_RELEASED"] = "Full party wipe detected! Releasing spirit automatically to save key timer."
+    L["MSG_CONSUMABLE_EXPIRING"] = "Consumables Alert: Your |cffffcc00%s|r expires in |cffff3333%d min|r. Refresh it before next pull."
+    L["MSG_LFG_PROPOSAL"] = "Dungeon/Raid finder proposal ready!"
 end
 
 DQ.L = L

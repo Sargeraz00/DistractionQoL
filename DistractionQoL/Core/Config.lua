@@ -23,9 +23,11 @@ local defaultSettings = {
 
     -- 2. Raid Flow & Readiness (Anti-Distraction)
     raidFlow = {
-        flashTaskbar = true,       -- Flash Windows taskbar icon on Ready Check / Pull
-        readyCheckSound = true,    -- Play audio ping via Master channel on Ready Check
-        checkConsumables = true,   -- Alert missing Flask, Food, Rune, Weapon oil at Ready Check
+        flashTaskbar = true,            -- Flash Windows taskbar icon on Ready Check / Pull
+        readyCheckSound = true,         -- Play audio ping via Master channel on Ready Check
+        checkConsumables = true,        -- Alert missing Flask, Food, Rune, Weapon oil at Ready Check
+        warnExpiringConsumables = true, -- Alert in chat if consumables have < 5m left out of combat
+        lfgAlert = true,                -- Flash taskbar & play sound on dungeon/LFG queue proposal
     },
 
     -- 3. QoL Automations
@@ -66,9 +68,15 @@ local defaultSettings = {
     mythicPlus = {
         autoSlot = true,           -- Auto-insert keystone at Font of Power
         announceSlot = true,       -- Announce inserted keystone to group
+        autoReleaseOnWipe = true,  -- Auto-release spirit on full party wipe in M+
     },
 
-    -- 8. Setup Wizard State
+    -- 8. Tooltip Raider Context
+    tooltip = {
+        targetedBy = true,         -- Show how many party/raid members target the hovered mob
+    },
+
+    -- 9. Setup Wizard State
     installerVersion = 0,          -- Version of the completed setup wizard (0 = needs wizard)
 }
 

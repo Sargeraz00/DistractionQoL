@@ -36,11 +36,15 @@ function DQ.RaidFlow:CheckConsumables(isManual)
     end
 end
 
+local lastExpWarnTime = 0
+
 -- Initializes event handlers for raid readiness
 function DQ.RaidFlow:Init()
     local frame = CreateFrame("Frame")
     frame:RegisterEvent("READY_CHECK")
     frame:RegisterEvent("CHAT_MSG_ADDON")
+    frame:RegisterEvent("PLAYER_REGEN_ENABLED")
+    frame:RegisterEvent("LFG_PROPOSAL_SHOW")
 
     -- Register DBM / BigWigs addon communication prefixes for pull timers
     if C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix then
@@ -78,6 +82,35 @@ function DQ.RaidFlow:Init()
             elseif prefix == "BigWigs" and msg and (msg:find("Pull") or msg:find("pull")) then
                 -- BigWigs pull timer broadcast
                 if FlashClientIcon then FlashClientIcon() end
+            end
+
+        -- 3. EXPIRING CONSUMABLES WARNING (OUT OF COMBAT IN INSTANCES)
+        elseif event == "PLAYER_REGEN_ENABLED" then
+            if IsInInstance and IsInInstance() then
+                local now = GetTime and GetTime() or 0
+                if (now - lastExpWarnTime) >= 60 then
+                    if DQ.Detection and DQ.Detection.CheckExpiringConsumables then
+                        local expiring = DQ.Detection:CheckExpiringConsumables(300) -- 5 min
+                        if #expiring > 0 then
+                            lastExpWarnTime = now
+                            for _, item in ipairs(expiring) do
+                                local fmt = L["MSG_CONSUMABLE_EXPIRING"] or "Aviso de Consumibles: Tu |cffffcc00%s|r expira en |cffff3333%d min|r. Renuévala antes del próximo pull."
+                                PrintMsg(string.format(fmt, tostring(item.name), item.minutes))
+                            end
+                        end
+                    end
+                end
+            end
+
+        -- 4. LFG / DUNGEON QUEUE PROPOSAL ALERT
+        elseif event == "LFG_PROPOSAL_SHOW" then
+            if DQ.Config:Get("raidFlow", "lfgAlert") ~= false then
+                if FlashClientIcon then FlashClientIcon() end
+                if PlaySound then
+                    pcall(PlaySound, SOUNDKIT.READY_CHECK or 8959, "Master")
+                end
+                local fmt = L["MSG_LFG_PROPOSAL"] or "¡Llamada de Buscador! Tu grupo de mazmorra o banda está listo."
+                PrintMsg("|cff00ff00" .. fmt .. "|r")
             end
         end
     end)

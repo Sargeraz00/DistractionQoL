@@ -38,6 +38,12 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
         if DQ.Keystone and DQ.Keystone.Init then
             DQ.Keystone:Init()
         end
+        if DQ.WipeRelease and DQ.WipeRelease.Init then
+            DQ.WipeRelease:Init()
+        end
+        if DQ.TargetedBy and DQ.TargetedBy.Init then
+            DQ.TargetedBy:Init()
+        end
         DQ.UI:RegisterSettingsCategory()
     elseif event == "PLAYER_LOGIN" then
         DQ.Hook:Init()

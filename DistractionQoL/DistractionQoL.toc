@@ -39,6 +39,8 @@ Modules\BagSort\BagSort.lua
 
 Modules\Chat\ChatHistory.lua
 Modules\MythicPlus\Keystone.lua
+Modules\MythicPlus\WipeRelease.lua
+Modules\Tooltip\TargetedBy.lua
 
 # --- UI & Presentation Layer ---
 UI\ConfigPanel.lua

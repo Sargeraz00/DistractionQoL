@@ -211,3 +211,46 @@ function DQ.Detection:CheckPlayerConsumables()
 
     return missing
 end
+
+-- Checks for consumables that are about to expire (e.g. less than thresholdSeconds remaining)
+function DQ.Detection:CheckExpiringConsumables(thresholdSeconds)
+    thresholdSeconds = thresholdSeconds or 300
+    local expiring = {}
+    local now = GetTime and GetTime() or 0
+    if not C_UnitAuras or not C_UnitAuras.GetAuraDataByIndex then return expiring end
+
+    local i = 1
+    while true do
+        local ok, aura = pcall(C_UnitAuras.GetAuraDataByIndex, "player", i, "HELPFUL")
+        if not ok or not aura then break end
+
+        local exp = aura.expirationTime or 0
+        if exp > 0 and (exp - now) > 0 and (exp - now) <= thresholdSeconds then
+            local remMins = math.ceil((exp - now) / 60)
+            local name = aura.name or "Consumible"
+            local lowerName = name:lower()
+            local icon = aura.icon or 0
+
+            local isConsumable = false
+            if icon == 134062 or icon == 136000 or icon == 134063 or
+               lowerName:find("well fed") or lowerName:find("bien alimentado") or
+               lowerName:find("aliment") or lowerName:find("satt") then
+                isConsumable = true
+            elseif lowerName:find("flask") or lowerName:find("frasco") or
+                   lowerName:find("phial") or lowerName:find("fial") or
+                   lowerName:find("elixir") or icon == 463853 or icon == 463854 then
+                isConsumable = true
+            elseif lowerName:find("rune") or lowerName:find("runa") or lowerName:find("augment") or lowerName:find("aumento") then
+                isConsumable = true
+            end
+
+            if isConsumable then
+                table.insert(expiring, { name = name, minutes = remMins })
+            end
+        end
+        i = i + 1
+    end
+
+    return expiring
+end
+

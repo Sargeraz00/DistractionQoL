@@ -153,7 +153,8 @@ local function HookDialogDefinition(key)
             end
 
             if DQ.Detection and DQ.Detection:ShouldProtect() then
-                if IsShiftKeyDown() then
+                local allowBypass = IsShiftKeyDown() or (DQ.WipeRelease and DQ.WipeRelease.isFullWipeActive)
+                if allowBypass then
                     if DQ.Detection.simMode then
                         DismissSimulation(self)
                         return -- returns nil to allow Blizzard to hide the dialog cleanly
@@ -188,7 +189,8 @@ local function HookDialogDefinition(key)
             end
 
             if DQ.Detection and DQ.Detection:ShouldProtect() then
-                if IsShiftKeyDown() then
+                local allowBypass = IsShiftKeyDown() or (DQ.WipeRelease and DQ.WipeRelease.isFullWipeActive)
+                if allowBypass then
                     if DQ.Detection.simMode then
                         DismissSimulation(self)
                         return -- returns nil to allow Blizzard to hide dialog cleanly
