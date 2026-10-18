@@ -157,7 +157,7 @@ local function BuildWizardWindow()
     headerAccent:SetColorTexture(0.0, 0.85, 1.0, 0.6)
 
     -- Header Title
-    local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalMedium")
+    local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetPoint("LEFT", headerBar, "LEFT", 14, 0)
     title:SetText("|cff00e5ffDistractionQoL|r — |cffffffffAsistente de Configuración Inicial|r")
 

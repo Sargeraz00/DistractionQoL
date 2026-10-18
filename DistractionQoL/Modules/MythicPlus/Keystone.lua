@@ -24,6 +24,9 @@ function DQ.Keystone:HandleReceptacleOpen()
     local autoSlot = DQ.Config and DQ.Config:Get("mythicPlus", "autoSlot")
     if autoSlot == false then return end
 
+    -- Shift key bypass: hold SHIFT to prevent auto-slotting if manual control is desired
+    if IsShiftKeyDown and IsShiftKeyDown() then return end
+
     if not C_ChallengeMode or not C_ChallengeMode.SlotKeystone then return end
 
     -- Guard: don't attempt if a keystone is already in the receptacle
@@ -33,7 +36,30 @@ function DQ.Keystone:HandleReceptacleOpen()
 
     -- Slot keystone in 0ms upon pedestal interaction
     C_Timer.After(0.05, function()
-        if C_ChallengeMode.HasSlottedKeystone and not C_ChallengeMode.HasSlottedKeystone() then
+        if C_ChallengeMode.HasSlottedKeystone and C_ChallengeMode.HasSlottedKeystone() then
+            return
+        end
+
+        local slotted = false
+        if C_Container and C_Container.GetContainerNumSlots and C_Container.GetContainerItemLink and C_Container.PickupContainerItem then
+            for bag = 0, 4 do
+                local numSlots = C_Container.GetContainerNumSlots(bag) or 0
+                for slot = 1, numSlots do
+                    local link = C_Container.GetContainerItemLink(bag, slot)
+                    if link and link:match("|Hkeystone:") then
+                        C_Container.PickupContainerItem(bag, slot)
+                        if CursorHasItem and CursorHasItem() then
+                            pcall(C_ChallengeMode.SlotKeystone)
+                            slotted = true
+                            break
+                        end
+                    end
+                end
+                if slotted then break end
+            end
+        end
+
+        if not slotted then
             pcall(C_ChallengeMode.SlotKeystone)
         end
     end)
@@ -75,18 +101,44 @@ function DQ.Keystone:HandleKeystoneSlotted()
     PrintMsg("|cff00ff00" .. msg .. "|r")
 end
 
+local function HookChallengesFrame()
+    if ChallengesKeystoneFrame and not DQ.Keystone.isFrameHooked then
+        DQ.Keystone.isFrameHooked = true
+        ChallengesKeystoneFrame:HookScript("OnShow", function()
+            DQ.Keystone:HandleReceptacleOpen()
+        end)
+    end
+end
+
 function DQ.Keystone:Init()
     local frame = CreateFrame("Frame")
-    frame:RegisterEvent("CHALLENGE_MODE_KEYSTONE_RECEPTACLE_OPEN")
-    frame:RegisterEvent("CHALLENGE_MODE_KEYSTONE_SLOTTED")
+
+    -- Note: Blizzard's native event is spelled "RECEPTABLE" with a T instead of "RECEPTACLE"
+    pcall(frame.RegisterEvent, frame, "CHALLENGE_MODE_KEYSTONE_RECEPTABLE_OPEN")
+    pcall(frame.RegisterEvent, frame, "CHALLENGE_MODE_KEYSTONE_SLOTTED")
 
     frame:SetScript("OnEvent", function(self, event)
-        if event == "CHALLENGE_MODE_KEYSTONE_RECEPTACLE_OPEN" then
+        if event == "CHALLENGE_MODE_KEYSTONE_RECEPTABLE_OPEN" then
             DQ.Keystone:HandleReceptacleOpen()
         elseif event == "CHALLENGE_MODE_KEYSTONE_SLOTTED" then
             DQ.Keystone:HandleKeystoneSlotted()
         end
     end)
 
+    -- Also hook ChallengesKeystoneFrame:OnShow as a secondary rock-solid trigger
+    if ChallengesKeystoneFrame then
+        HookChallengesFrame()
+    else
+        local loader = CreateFrame("Frame")
+        loader:RegisterEvent("ADDON_LOADED")
+        loader:SetScript("OnEvent", function(self, event, loadedAddon)
+            if loadedAddon == "Blizzard_ChallengesUI" then
+                HookChallengesFrame()
+                self:UnregisterEvent("ADDON_LOADED")
+            end
+        end)
+    end
+
     self.frame = frame
 end
+
