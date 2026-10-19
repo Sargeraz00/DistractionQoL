@@ -17,6 +17,7 @@
 Core\Locales.lua
 Core\Migration.lua
 Core\Config.lua
+Core\Util.lua
 Core\Detection.lua
 
 # --- Compatibility Layer ---
@@ -41,12 +42,18 @@ Modules\Chat\ChatHistory.lua
 Modules\MythicPlus\Keystone.lua
 Modules\MythicPlus\WipeRelease.lua
 Modules\Tooltip\TargetedBy.lua
+Modules\Tooltip\ItemCounts.lua
+Modules\Loot\TradeAdvisor.lua
+Modules\LFG\UtilityRadar.lua
+Modules\MythicPlus\CommandHub.lua
 
 # --- UI & Presentation Layer ---
+UI\Theme.lua
 UI\Components.lua
 UI\Tabs\TabRelease.lua
 UI\Tabs\TabRaidFlow.lua
 UI\Tabs\TabAutomations.lua
+UI\Tabs\TabTooltips.lua
 UI\Tabs\TabPerformance.lua
 UI\Tabs\TabCompatibility.lua
 UI\ConfigPanel.lua

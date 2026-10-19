@@ -10,15 +10,16 @@ DQ.UI = DQ.UI or {}
 
 local configFrame = nil
 
--- Builds the configuration panel frame with tabbed navigation
+-- Builds the configuration panel frame with modern sidebar navigation
 function DQ.UI:CreatePanel()
     if configFrame then return configFrame end
 
     local L = DQ.L or {}
+    local versionStr = DQ.Util and DQ.Util.GetVersion and DQ.Util.GetVersion() or "3.1.1"
 
-    -- Main Frame with modern flat obsidian backdrop
+    -- Main Frame with modern flat obsidian backdrop (720x520)
     local f = CreateFrame("Frame", "DistractionQoLConfigFrame", UIParent, "BackdropTemplate")
-    f:SetSize(480, 520)
+    f:SetSize(720, 520)
     f:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
     f:SetFrameStrata("DIALOG")
     f:SetMovable(true)
@@ -57,7 +58,7 @@ function DQ.UI:CreatePanel()
     -- Top title
     local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetPoint("LEFT", f, "TOPLEFT", 14, -13)
-    title:SetText((L["CONFIG_TITLE"] or "|cff00e5ffDistractionQoL|r") .. " |cff888888v3.1.1|r")
+    title:SetText((L["CONFIG_TITLE"] or "|cff00e5ffDistractionQoL|r") .. " |cff888888v" .. versionStr .. "|r")
     f.title = title
     f.TitleText = title
 
@@ -65,7 +66,11 @@ function DQ.UI:CreatePanel()
     local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
     closeBtn:SetSize(22, 22)
     closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -3, -3)
-    closeBtn:SetScript("OnClick", function() f:Hide() end)
+    closeBtn:SetScript("OnClick", function()
+        if not InCombatLockdown or not InCombatLockdown() then
+            f:Hide()
+        end
+    end)
 
     local xText = closeBtn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     xText:SetPoint("CENTER", closeBtn, "CENTER", 0, 1)
@@ -116,14 +121,29 @@ function DQ.UI:CreatePanel()
     end)
 
     -- ==========================================================
-    -- NAVIGATION TABS
+    -- MODERN LEFT SIDEBAR NAVIGATION
     -- ==========================================================
+    local sidebar = CreateFrame("Frame", nil, f, "BackdropTemplate")
+    sidebar:SetPoint("TOPLEFT", f, "TOPLEFT", 1, -27)
+    sidebar:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 1, 48)
+    sidebar:SetWidth(155)
+    sidebar:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8x8",
+        edgeFile = "Interface\\Buttons\\WHITE8x8",
+        edgeSize = 1,
+        insets = { left = 1, right = 1, top = 1, bottom = 1 },
+    })
+    sidebar:SetBackdropColor(0.04, 0.04, 0.06, 0.98)
+    sidebar:SetBackdropBorderColor(0.18, 0.18, 0.22, 1)
+    f.sidebar = sidebar
+
     local tabDefs = {
-        { id = "release", label = L["TAB_RELEASE"] or "Liberación" },
-        { id = "raidflow", label = L["TAB_RAIDFLOW"] or "Flujo Raid" },
-        { id = "automation", label = L["TAB_AUTOMATION"] or "Automatizaciones" },
-        { id = "performance", label = L["TAB_PERFORMANCE"] or "Rendimiento" },
-        { id = "conflicts", label = L["TAB_CONFLICTS"] or "Compatibilidad" },
+        { id = "release",     icon = "Interface\\Icons\\Spell_Holy_Resurrection",           label = L["TAB_RELEASE"] or "Liberación" },
+        { id = "raidflow",    icon = "Interface\\Icons\\Spell_Holy_GreaterBlessingofKings", label = L["TAB_RAIDFLOW"] or "Flujo Raid" },
+        { id = "automation",  icon = "Interface\\Icons\\INV_Gizmo_02",                      label = L["TAB_AUTOMATION"] or "Automatiz." },
+        { id = "tooltips",    icon = "Interface\\Icons\\INV_Misc_Bag_08",                   label = L["TAB_TOOLTIPS"] or "Tooltips & Botín" },
+        { id = "performance", icon = "Interface\\Icons\\Spell_Nature_Invisibilty",          label = L["TAB_PERFORMANCE"] or "Rendimiento" },
+        { id = "conflicts",   icon = "Interface\\Icons\\INV_Misc_Gear_01",                  label = L["TAB_CONFLICTS"] or "Compatibilidad" },
     }
 
     local tabButtons = {}
@@ -135,57 +155,94 @@ function DQ.UI:CreatePanel()
         for _, def in ipairs(tabDefs) do
             local page = tabPages[def.id]
             local btn = tabButtons[def.id]
-            if def.id == tabId then
+            local isSelected = (def.id == tabId)
+            if isSelected then
                 if page then page:Show() end
                 if btn and not btn.isSkinned then
-                    btn:SetBackdropColor(0.0, 0.45, 0.55, 0.8)
+                    btn:SetBackdropColor(0.0, 0.35, 0.45, 0.9)
                     btn:SetBackdropBorderColor(0.0, 0.85, 0.95, 1)
+                    if btn.indicator then btn.indicator:Show() end
                     if btn.text then btn.text:SetTextColor(1, 1, 1, 1) end
                 end
             else
                 if page then page:Hide() end
                 if btn and not btn.isSkinned then
-                    btn:SetBackdropColor(0.10, 0.10, 0.14, 0.95)
-                    btn:SetBackdropBorderColor(0.20, 0.20, 0.24, 1)
-                    if btn.text then btn.text:SetTextColor(0.75, 0.75, 0.75, 1) end
+                    btn:SetBackdropColor(0.08, 0.08, 0.11, 0.8)
+                    btn:SetBackdropBorderColor(0.15, 0.15, 0.18, 0.8)
+                    if btn.indicator then btn.indicator:Hide() end
+                    if btn.text then btn.text:SetTextColor(0.70, 0.70, 0.75, 1) end
                 end
             end
         end
     end
 
-    local tabWidth = 86
-    local tabHeight = 24
-    local tabStartX = 14
-    local tabY = -34
+    local btnHeight = 34
+    local btnWidth = 151
+    local btnSpacing = 3
 
     for i, def in ipairs(tabDefs) do
-        local btn = CreateFrame("Button", nil, f, "BackdropTemplate")
-        btn:SetSize(tabWidth, tabHeight)
-        btn:SetPoint("TOPLEFT", f, "TOPLEFT", tabStartX + (i - 1) * (tabWidth + 4), tabY)
+        local btn = CreateFrame("Button", nil, sidebar, "BackdropTemplate")
+        btn:SetSize(btnWidth, btnHeight)
+        btn:SetPoint("TOPLEFT", sidebar, "TOPLEFT", 2, -4 - ((i - 1) * (btnHeight + btnSpacing)))
         btn:SetBackdrop({
             bgFile = "Interface\\Buttons\\WHITE8x8",
             edgeFile = "Interface\\Buttons\\WHITE8x8",
             edgeSize = 1,
             insets = { left = 1, right = 1, top = 1, bottom = 1 },
         })
-        btn:SetBackdropColor(0.10, 0.10, 0.14, 0.95)
-        btn:SetBackdropBorderColor(0.20, 0.20, 0.24, 1)
+        btn:SetBackdropColor(0.08, 0.08, 0.11, 0.8)
+        btn:SetBackdropBorderColor(0.15, 0.15, 0.18, 0.8)
 
+        -- Left Active Indicator Strip (3px)
+        local indicator = btn:CreateTexture(nil, "OVERLAY")
+        indicator:SetPoint("TOPLEFT", btn, "TOPLEFT", 0, 0)
+        indicator:SetPoint("BOTTOMLEFT", btn, "BOTTOMLEFT", 0, 0)
+        indicator:SetWidth(3)
+        indicator:SetColorTexture(0.0, 0.85, 0.95, 1)
+        indicator:Hide()
+        btn.indicator = indicator
+
+        -- Category Icon
+        local icon = btn:CreateTexture(nil, "ARTWORK")
+        icon:SetSize(18, 18)
+        icon:SetPoint("LEFT", btn, "LEFT", 8, 0)
+        icon:SetTexture(def.icon)
+        icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+        btn.icon = icon
+
+        -- Category Label
         local btnText = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        btnText:SetPoint("CENTER")
+        btnText:SetPoint("LEFT", icon, "RIGHT", 8, 0)
+        btnText:SetPoint("RIGHT", btn, "RIGHT", -4, 0)
+        btnText:SetJustifyH("LEFT")
+        btnText:SetWordWrap(false)
         btnText:SetText(def.label)
         btn.text = btnText
 
         btn:SetScript("OnClick", function()
             ShowTab(def.id)
         end)
+        btn:SetScript("OnEnter", function(self)
+            if activeTab ~= def.id and not self.isSkinned then
+                self:SetBackdropColor(0.13, 0.13, 0.18, 0.95)
+                self:SetBackdropBorderColor(0.30, 0.30, 0.38, 1)
+                if self.text then self.text:SetTextColor(0.95, 0.95, 0.95, 1) end
+            end
+        end)
+        btn:SetScript("OnLeave", function(self)
+            if activeTab ~= def.id and not self.isSkinned then
+                self:SetBackdropColor(0.08, 0.08, 0.11, 0.8)
+                self:SetBackdropBorderColor(0.15, 0.15, 0.18, 0.8)
+                if self.text then self.text:SetTextColor(0.70, 0.70, 0.75, 1) end
+            end
+        end)
 
         tabButtons[def.id] = btn
 
-        -- Container page for this tab
+        -- Container page for this tab (Width ~544px, Height ~440px)
         local page = CreateFrame("Frame", nil, f)
-        page:SetPoint("TOPLEFT", f, "TOPLEFT", 14, -68)
-        page:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -14, 52)
+        page:SetPoint("TOPLEFT", sidebar, "TOPRIGHT", 10, 0)
+        page:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -10, 52)
         tabPages[def.id] = page
     end
 
@@ -200,6 +257,9 @@ function DQ.UI:CreatePanel()
     end
     if self.BuildTabAutomations then
         self:BuildTabAutomations(f, tabPages["automation"])
+    end
+    if self.BuildTabTooltips then
+        self:BuildTabTooltips(f, tabPages["tooltips"])
     end
     if self.BuildTabPerformance then
         self:BuildTabPerformance(f, tabPages["performance"])
@@ -217,7 +277,7 @@ function DQ.UI:CreatePanel()
     bottomBar:SetHeight(48)
     bottomBar:SetColorTexture(0, 0, 0, 0.40)
 
-    local btnW = 100
+    local btnW = 110
     local btnH = 26
     local bY = 12
 
@@ -230,16 +290,9 @@ function DQ.UI:CreatePanel()
     local btnSim = self:CreateFlatButton(f, L["BTN_SIM"] or "Simular Muerte", btnW, btnH)
     btnSim:SetPoint("LEFT", btnTest, "RIGHT", 8, 0)
     btnSim:SetScript("OnClick", function()
-        DQ.Detection.simMode = true
-        DQ.Hook:Init()
-        local prefix = "|cff00e5ff[DistractionQoL]|r "
-        local msg = prefix .. (L["MSG_SIM_START"] or "|cffffcc00Modo simulación activo:|r Ventana de liberación abierta.\n1. Un clic normal será bloqueado y activará la alerta.\n2. Mantén presionado SHIFT y haz clic para cerrar.")
-        if DEFAULT_CHAT_FRAME and DEFAULT_CHAT_FRAME.AddMessage then
-            DEFAULT_CHAT_FRAME:AddMessage(msg)
-        elseif print then
-            print(msg)
+        if DQ.Detection and DQ.Detection.StartSimulation then
+            DQ.Detection:StartSimulation()
         end
-        StaticPopup_Show("DEATH")
     end)
 
     local btnMute = self:CreateFlatButton(f, "", 140, btnH)
@@ -253,9 +306,11 @@ function DQ.UI:CreatePanel()
     f.btnMute = btnMute
 
     local btnClose = self:CreateFlatButton(f, L["BTN_CLOSE"] or "Cerrar", 85, btnH)
-    btnClose:SetPoint("LEFT", btnMute, "RIGHT", 8, 0)
+    btnClose:SetPoint("RIGHT", f, "BOTTOMRIGHT", -14, bY)
     btnClose:SetScript("OnClick", function()
-        f:Hide()
+        if not InCombatLockdown or not InCombatLockdown() then
+            f:Hide()
+        end
     end)
 
     -- Default to first tab

@@ -4,13 +4,17 @@
 
 local addonName, DQ = ...
 
--- Safe print helper
+-- Safe print helper forwarding to centralized DQ:Print
 local function PrintMsg(msg)
-    local formatted = "|cff00e5ff[DistractionQoL]|r " .. tostring(msg)
-    if DEFAULT_CHAT_FRAME and DEFAULT_CHAT_FRAME.AddMessage then
-        DEFAULT_CHAT_FRAME:AddMessage(formatted)
-    elseif print then
-        print(formatted)
+    if DQ.Print then
+        DQ:Print(msg)
+    else
+        local formatted = "|cff00e5ff[DistractionQoL]|r " .. tostring(msg)
+        if DEFAULT_CHAT_FRAME and DEFAULT_CHAT_FRAME.AddMessage then
+            DEFAULT_CHAT_FRAME:AddMessage(formatted)
+        elseif print then
+            print(formatted)
+        end
     end
 end
 
@@ -44,9 +48,20 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
         if DQ.TargetedBy and DQ.TargetedBy.Init then
             DQ.TargetedBy:Init()
         end
+        if DQ.ItemCounts and DQ.ItemCounts.Init then
+            DQ.ItemCounts:Init()
+        end
+        if DQ.TradeAdvisor and DQ.TradeAdvisor.Init then
+            DQ.TradeAdvisor:Init()
+        end
+        if DQ.UtilityRadar and DQ.UtilityRadar.Init then
+            DQ.UtilityRadar:Init()
+        end
+        if DQ.CommandHub and DQ.CommandHub.Init then
+            DQ.CommandHub:Init()
+        end
         DQ.UI:RegisterSettingsCategory()
     elseif event == "PLAYER_LOGIN" then
-        DQ.Hook:Init()
         if DQ.UI and DQ.UI.CheckSkinning then
             DQ.UI:CheckSkinning()
         end
@@ -54,7 +69,8 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
             DQ.Wizard:CheckAutoRun()
         end
         local L = DQ.L or {}
-        PrintMsg(L["MSG_LOADED"] or "Addon cargado (WoW 12.1.5 Midnight). Escribe |cffffcc00/qol|r para abrir el panel.")
+        local ver = (DQ.Util and DQ.Util.GetVersion and DQ.Util.GetVersion()) or "3.1.1"
+        PrintMsg(string.format(L["MSG_LOADED"] or "Addon cargado (v%s - WoW Midnight). Escribe |cffffcc00/qol|r para abrir el panel.", ver))
     end
 end)
 
@@ -65,6 +81,8 @@ SLASH_DISTRACTIONQOL1 = "/qol"
 SLASH_DISTRACTIONQOL2 = "/dqol"
 SLASH_DISTRACTIONQOL3 = "/distraction"
 SLASH_DISTRACTIONQOL4 = "/burro" -- Meme command alias!
+SLASH_BANEBURRO1 = "/baneburro"
+SLASH_BBR1 = "/bbr"
 
 local function HandleSlashCmd(msg)
     local cmd, arg = (msg or ""):lower():match("^%s*(%S*)%s*(%S*)")
@@ -85,26 +103,14 @@ local function HandleSlashCmd(msg)
 
     elseif cmd == "sim" then
         if arg == "stop" or arg == "off" or arg == "close" then
-            if DQ.Hook and DQ.Hook.DismissSimulation then
-                DQ.Hook.DismissSimulation()
+            if DQ.Detection and DQ.Detection.StopSimulation then
+                DQ.Detection:StopSimulation()
             end
             return
         end
-        DQ.Detection.simMode = true
-        if StaticPopupDialogs then
-            for _, k in ipairs({"DEATH", "DEATH_RELEASE"}) do
-                local d = StaticPopupDialogs[k]
-                if d then
-                    d._BaneBurroHooked = nil
-                    if d.selectCallbackByIndex or d.OnButton1 then
-                        d.OnAccept = nil
-                    end
-                end
-            end
+        if DQ.Detection and DQ.Detection.StartSimulation then
+            DQ.Detection:StartSimulation()
         end
-        DQ.Hook:Init()
-        PrintMsg(L["MSG_SIM_START"] or "|cffffcc00Modo simulación activo:|r Ventana de liberación abierta.\n1. Un clic normal en 'Liberar espíritu' será bloqueado y activará la alerta.\n2. Mantén presionado SHIFT y haz clic para cerrar la ventana.")
-        StaticPopup_Show("DEATH")
 
     elseif cmd == "check" or cmd == "buffs" or cmd == "consumables" then
         if DQ.RaidFlow then
@@ -114,6 +120,22 @@ local function HandleSlashCmd(msg)
     elseif cmd == "sort" or cmd == "bags" or cmd == "bolsas" then
         if DQ.BagSort then
             DQ.BagSort:SortBags()
+        end
+
+    elseif cmd == "loot" then
+        if DQ.TradeAdvisor and DQ.TradeAdvisor.SimulateTestLoot then
+            PrintMsg(L["LOOT_ADVISOR_TITLE"] or "Simulando botín de prueba...")
+            DQ.TradeAdvisor:SimulateTestLoot()
+        end
+
+    elseif cmd == "hub" or cmd == "keys" then
+        if DQ.CommandHub and DQ.CommandHub.Toggle then
+            DQ.CommandHub:Toggle()
+        end
+
+    elseif cmd == "vault" then
+        if DQ.Util and DQ.Util.ToggleGreatVault then
+            DQ.Util.ToggleGreatVault()
         end
 
     elseif cmd == "mute" then
@@ -198,7 +220,10 @@ local function HandleSlashCmd(msg)
         if isSpanish then
             PrintMsg("--- |cff00e5ffDistractionQoL|r Comandos ---")
             PrintMsg("|cffffcc00/qol|r (o |cffffcc00/burro|r) - Abre el panel de configuración.")
+            PrintMsg("|cffffcc00/qol hub|r (o |cffffcc00/keys|r) - Centro M+ (Teleports Midnight y llaves de grupo).")
+            PrintMsg("|cffffcc00/qol vault|r - Abre la Gran Bóveda semanal al instante.")
             PrintMsg("|cffffcc00/qol sort|r - Ordena bolsas (inverso, materiales a bolsa de profesión).")
+            PrintMsg("|cffffcc00/qol loot|r - Simula y prueba la ventana de Asesor de Botín Comerciable.")
             PrintMsg("|cffffcc00/qol check|r - Revisa si te faltan consumibles (Comida, Frasco, Runas, Arma).")
             PrintMsg("|cffffcc00/qol fps|r - Alterna entre Máximo FPS para Raid y ajustes originales.")
             PrintMsg("|cffffcc00/qol fps save|r - Guarda la configuración gráfica actual como backup.")
@@ -212,7 +237,10 @@ local function HandleSlashCmd(msg)
         else
             PrintMsg("--- |cff00e5ffDistractionQoL|r Commands ---")
             PrintMsg("|cffffcc00/qol|r (or |cffffcc00/burro|r) - Open configuration console.")
+            PrintMsg("|cffffcc00/qol hub|r (or |cffffcc00/keys|r) - M+ Command Hub (Midnight teleports & party keys).")
+            PrintMsg("|cffffcc00/qol vault|r - Open the Great Vault instantly from anywhere.")
             PrintMsg("|cffffcc00/qol sort|r - Sort bags (reverse order, reagents into reagent bag).")
+            PrintMsg("|cffffcc00/qol loot|r - Simulate and test the Tradeable Loot Advisor popup.")
             PrintMsg("|cffffcc00/qol check|r - Check missing consumables (Food, Flask, Rune, Weapon).")
             PrintMsg("|cffffcc00/qol fps|r - Toggle between Optimal Raid FPS and original settings.")
             PrintMsg("|cffffcc00/qol fps save|r - Save current graphics settings as backup.")

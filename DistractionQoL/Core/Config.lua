@@ -69,14 +69,44 @@ local defaultSettings = {
         autoSlot = true,           -- Auto-insert keystone at Font of Power
         announceSlot = true,       -- Announce inserted keystone to group
         autoReleaseOnWipe = true,  -- Auto-release spirit on full party wipe in M+
+        commandHub = true,         -- Enable Dungeon Command Hub & Party Keys Matrix
     },
 
-    -- 8. Tooltip Raider Context
+    -- 8. Tooltip Context, Inventory Counts & Reagent Expansion
     tooltip = {
         targetedBy = true,         -- Show how many party/raid members target the hovered mob
+        itemCount = {
+            enabled = true,        -- Master toggle for item count display
+            showBags = true,       -- Show count in bags
+            showBank = true,       -- Show count in personal bank
+            showWarband = true,    -- Show count in Warband bank
+            showTotal = true,      -- Show total sum
+            hideSingle = true,     -- Hide if total is 1 and only in bags (reduces clutter)
+            requireShift = false,  -- Only show when holding SHIFT key
+        },
+        reagentExpansion = {
+            enabled = true,        -- Show expansion for crafting reagents
+            colorCurrent = true,   -- Highlight current expansion in gold/cyan
+        },
     },
 
-    -- 9. Setup Wizard State
+    -- 9. Loot Trade Advisor
+    loot = {
+        tradeAdvisor = true,       -- Show end-of-run tradeable loot popup
+        onlyUpgrades = false,      -- Only show items that increase equipped ilvl
+        onlyEligible = true,       -- Only show items wearable by player's class
+        autoWhisper = true,        -- Enable 1-click polite whisper to looter
+    },
+
+    -- 10. LFG Utility Radar
+    lfgRadar = {
+        enabled = true,            -- Master toggle for LFG utility badges & tooltip
+        showEntryBadges = true,    -- Show [BL] [CR] badges directly on search list rows
+        showTooltipAnalysis = true,-- Append utility breakdown to group tooltip
+        highlightRecommended = true,-- Highlight groups needing your class's specific utility
+    },
+
+    -- 11. Setup Wizard State
     installerVersion = 0,          -- Version of the completed setup wizard (0 = needs wizard)
 }
 

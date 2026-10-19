@@ -6,13 +6,14 @@ local addonName, DQ = ...
 
 DQ.Migration = {}
 
--- Safe print helper
+-- Safe print helper forwarding to DQ:Print
 local function PrintMsg(msg)
-    local formatted = "|cff00e5ff[DistractionQoL]|r " .. tostring(msg)
-    if DEFAULT_CHAT_FRAME and DEFAULT_CHAT_FRAME.AddMessage then
-        DEFAULT_CHAT_FRAME:AddMessage(formatted)
+    if DQ.Print then
+        DQ:Print(msg)
+    elseif DEFAULT_CHAT_FRAME and DEFAULT_CHAT_FRAME.AddMessage then
+        DEFAULT_CHAT_FRAME:AddMessage("|cff00e5ff[DistractionQoL]|r " .. tostring(msg))
     elseif print then
-        print(formatted)
+        print("|cff00e5ff[DistractionQoL]|r " .. tostring(msg))
     end
 end
 

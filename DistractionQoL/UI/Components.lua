@@ -29,6 +29,82 @@ function DQ.UI:GetSoundIcon(isOn, size)
     return string.format("|T%s:%d:%d:0:0|t ", path, size, size)
 end
 
+-- Helper to create standard Obsidian Flat Dialog/Window frames
+function DQ.UI:CreateWindow(frameName, titleText, width, height)
+    local f = CreateFrame("Frame", frameName, UIParent, "BackdropTemplate")
+    f:SetSize(width or 560, height or 520)
+    f:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+    f:SetFrameStrata("DIALOG")
+    f:SetMovable(true)
+    f:EnableMouse(true)
+    f:RegisterForDrag("LeftButton")
+    f:SetScript("OnDragStart", f.StartMoving)
+    f:SetScript("OnDragStop", f.StopMovingOrSizing)
+    f:Hide()
+
+    if DQ.Theme and DQ.Theme.ApplyWindowStyle then
+        DQ.Theme.ApplyWindowStyle(f)
+    else
+        f:SetBackdrop({
+            bgFile = "Interface\\Buttons\\WHITE8x8",
+            edgeFile = "Interface\\Buttons\\WHITE8x8",
+            edgeSize = 1,
+            insets = { left = 1, right = 1, top = 1, bottom = 1 },
+        })
+        f:SetBackdropColor(0.06, 0.06, 0.08, 0.96)
+        f:SetBackdropBorderColor(0.22, 0.22, 0.26, 1)
+    end
+
+    -- Header background bar
+    local headerBar = f:CreateTexture(nil, "BACKGROUND", nil, -5)
+    headerBar:SetPoint("TOPLEFT", f, "TOPLEFT", 1, -1)
+    headerBar:SetPoint("TOPRIGHT", f, "TOPRIGHT", -1, -1)
+    headerBar:SetHeight(26)
+    headerBar:SetColorTexture(0, 0, 0, 0.50)
+    f.headerBar = headerBar
+
+    -- Top Cyan Accent strip
+    local topBar = f:CreateTexture(nil, "ARTWORK")
+    topBar:SetPoint("TOPLEFT", f, "TOPLEFT", 1, -1)
+    topBar:SetPoint("TOPRIGHT", f, "TOPRIGHT", -1, -1)
+    topBar:SetHeight(2)
+    topBar:SetColorTexture(0.0, 0.85, 0.95, 1)
+    f.topAccent = topBar
+
+    -- Title
+    local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    title:SetPoint("LEFT", f, "TOPLEFT", 12, -13)
+    title:SetText(titleText or "|cff00e5ffDistractionQoL|r")
+    f.title = title
+    f.TitleText = title
+
+    -- Close Button
+    local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+    closeBtn:SetSize(22, 22)
+    closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -2)
+    closeBtn:SetScript("OnClick", function()
+        if not InCombatLockdown or not InCombatLockdown() then
+            f:Hide()
+        end
+    end)
+
+    local xText = closeBtn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    xText:SetPoint("CENTER", closeBtn, "CENTER", 0, 1)
+    xText:SetText("|cffaaaaaaX|r")
+    closeBtn.xText = xText
+
+    closeBtn:HookScript("OnEnter", function(self)
+        if not self.isSkinned and self.xText then self.xText:SetText("|cffff3333X|r") end
+    end)
+    closeBtn:HookScript("OnLeave", function(self)
+        if not self.isSkinned and self.xText then self.xText:SetText("|cffaaaaaaX|r") end
+    end)
+    f.closeBtn = closeBtn
+    f.CloseButton = closeBtn
+
+    return f
+end
+
 -- Helper to create CheckButtons using standard WoW template with clean positioning
 function DQ.UI:CreateCheckbox(parent, label, x, y, initialChecked, onClick)
     local cb = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate")

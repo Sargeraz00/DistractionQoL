@@ -22,6 +22,44 @@ function DQ.Detection:IsDeadOrSim()
     return false
 end
 
+-- Starts death simulation cleanly resetting StaticPopup hooks
+function DQ.Detection:StartSimulation()
+    self.simMode = true
+    if StaticPopupDialogs then
+        for _, k in ipairs({"DEATH", "DEATH_RELEASE"}) do
+            local d = StaticPopupDialogs[k]
+            if d then
+                d._BaneBurroHooked = nil
+                if d.selectCallbackByIndex or d.OnButton1 then
+                    d.OnAccept = nil
+                end
+            end
+        end
+    end
+    if DQ.Hook and DQ.Hook.Init then
+        DQ.Hook:Init()
+    end
+    local L = DQ.L or {}
+    local msg = (L["MSG_SIM_START"] or "|cffffcc00Modo simulación activo:|r Ventana de liberación abierta.\n1. Un clic normal será bloqueado y activará la alerta.\n2. Mantén presionado SHIFT y haz clic para cerrar.")
+    if DQ.Print then
+        DQ:Print(msg)
+    elseif print then
+        print("|cff00e5ff[DistractionQoL]|r " .. msg)
+    end
+    if StaticPopup_Show then
+        StaticPopup_Show("DEATH")
+    end
+end
+
+-- Stops death simulation cleanly
+function DQ.Detection:StopSimulation()
+    if DQ.Hook and DQ.Hook.DismissSimulation then
+        DQ.Hook.DismissSimulation()
+    else
+        self.simMode = false
+    end
+end
+
 -- Determines if current environment matches user protection settings for spirit release
 function DQ.Detection:ShouldProtect()
     -- Always protect when in manual simulation mode
