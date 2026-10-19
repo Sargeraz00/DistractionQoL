@@ -19,6 +19,7 @@ Core\Migration.lua
 Core\Config.lua
 Core\Util.lua
 Core\Detection.lua
+Core\Modules.lua
 
 # --- Compatibility Layer ---
 Modules\Compatibility\ConflictResolver.lua
@@ -60,4 +61,5 @@ UI\ConfigPanel.lua
 UI\Wizard.lua
 
 # --- Core Lifecycle & Dispatcher ---
+Core\Commands.lua
 Core\Core.lua

@@ -765,3 +765,17 @@ function DQ.BagSort:Init()
 
     self.eventFrame = eventFrame
 end
+
+-- Reactive Config subscriptions
+if DQ.Config and DQ.Config.RegisterCallback then
+    DQ.Config:RegisterCallback("automation.bagSortButton", function()
+        if DQ.BagSort and DQ.BagSort.UpdateBagButtonVisibility then
+            DQ.BagSort:UpdateBagButtonVisibility()
+        end
+    end)
+    DQ.Config:RegisterCallback("automation.overrideEllesmereSort", function()
+        if DQ.BagSort and DQ.BagSort.UpdateEllesmereIntegration then
+            DQ.BagSort:UpdateEllesmereIntegration()
+        end
+    end)
+end

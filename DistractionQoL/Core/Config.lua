@@ -205,21 +205,54 @@ function DQ.Config:Get(section, key, subKey)
     return val
 end
 
--- Set a configuration value with support for nested keys
+local callbacks = {}
+
+-- Registers a listener for setting changes
+-- path: e.g. "releaseGuard.soundEnabled", "automation.bagSortButton", or "*"
+function DQ.Config:RegisterCallback(path, callback)
+    if not path or type(callback) ~= "function" then return end
+    callbacks[path] = callbacks[path] or {}
+    table.insert(callbacks[path], callback)
+end
+
+-- Triggers registered callbacks for a specific setting path
+function DQ.Config:TriggerCallbacks(path, value)
+    if callbacks[path] then
+        for _, cb in ipairs(callbacks[path]) do
+            pcall(cb, value, path)
+        end
+    end
+    if callbacks["*"] then
+        for _, cb in ipairs(callbacks["*"]) do
+            pcall(cb, value, path)
+        end
+    end
+end
+
+-- Set a configuration value with support for nested keys and triggers callbacks
 function DQ.Config:Set(section, keyOrVal, subKeyOrVal, finalVal)
     if not self.db then return end
+    local path, value
 
     if finalVal ~= nil then
         -- 3 levels: section, key, subKey = finalVal
         if not self.db[section] then self.db[section] = {} end
         if not self.db[section][keyOrVal] then self.db[section][keyOrVal] = {} end
         self.db[section][keyOrVal][subKeyOrVal] = finalVal
+        path = section .. "." .. keyOrVal .. "." .. subKeyOrVal
+        value = finalVal
     elseif subKeyOrVal ~= nil then
         -- 2 levels: section, key = subKeyOrVal
         if not self.db[section] then self.db[section] = {} end
         self.db[section][keyOrVal] = subKeyOrVal
+        path = section .. "." .. keyOrVal
+        value = subKeyOrVal
     else
         -- 1 level: section = keyOrVal
         self.db[section] = keyOrVal
+        path = section
+        value = keyOrVal
     end
+
+    self:TriggerCallbacks(path, value)
 end

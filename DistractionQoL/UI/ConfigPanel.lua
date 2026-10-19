@@ -447,9 +447,10 @@ function DQ.UI:RegisterSettingsCategory()
     local panel = CreateFrame("Frame", "DistractionQoLSettingsCanvas", UIParent)
     panel.name = "DistractionQoL"
 
+    local verStr = DQ.Util and DQ.Util.GetVersion and DQ.Util.GetVersion() or "3.1.1"
     local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
     title:SetPoint("TOPLEFT", 16, -16)
-    title:SetText((L["CONFIG_TITLE"] or "|cff00e5ffDistractionQoL|r") .. " |cff888888v3.1.1 (WoW 12.1.5)|r")
+    title:SetText((L["CONFIG_TITLE"] or "|cff00e5ffDistractionQoL|r") .. " |cff888888v" .. verStr .. "|r")
 
     local desc = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
     desc:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
@@ -468,4 +469,18 @@ function DQ.UI:RegisterSettingsCategory()
     category.ID = panel.name
     Settings.RegisterAddOnCategory(category)
     self.settingsCategory = category
+end
+
+-- Reactive Config subscriptions
+if DQ.Config and DQ.Config.RegisterCallback then
+    DQ.Config:RegisterCallback("releaseGuard.soundEnabled", function()
+        if DQ.UI and DQ.UI.UpdateSoundControls then
+            DQ.UI:UpdateSoundControls()
+        end
+    end)
+    DQ.Config:RegisterCallback("fps.optimized", function()
+        if DQ.UI and DQ.UI.UpdateFPSControls then
+            DQ.UI:UpdateFPSControls()
+        end
+    end)
 end
