@@ -15,7 +15,7 @@ function DQ.UI:CreatePanel()
     if configFrame then return configFrame end
 
     local L = DQ.L or {}
-    local versionStr = DQ.Util and DQ.Util.GetVersion and DQ.Util.GetVersion() or "3.1.1"
+    local versionStr = DQ.Util and DQ.Util.GetVersion and DQ.Util.GetVersion() or "4.0.0"
 
     -- Main Frame with modern flat obsidian backdrop (720x520)
     local f = CreateFrame("Frame", "DistractionQoLConfigFrame", UIParent, "BackdropTemplate")
@@ -447,7 +447,7 @@ function DQ.UI:RegisterSettingsCategory()
     local panel = CreateFrame("Frame", "DistractionQoLSettingsCanvas", UIParent)
     panel.name = "DistractionQoL"
 
-    local verStr = DQ.Util and DQ.Util.GetVersion and DQ.Util.GetVersion() or "3.1.1"
+    local verStr = DQ.Util and DQ.Util.GetVersion and DQ.Util.GetVersion() or "4.0.0"
     local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
     title:SetPoint("TOPLEFT", 16, -16)
     title:SetText((L["CONFIG_TITLE"] or "|cff00e5ffDistractionQoL|r") .. " |cff888888v" .. verStr .. "|r")

@@ -12,7 +12,7 @@ function DQ.Util.GetVersion()
         local ver = C_AddOns.GetAddOnMetadata(addonName, "Version")
         if ver and ver ~= "" then return ver end
     end
-    return "3.1.1"
+    return "4.0.0"
 end
 
 -- Centralized safe chat printer

@@ -152,7 +152,7 @@ if isSpanish then
     L["WIZ_STEP_4"] = "4. Utilidades"
     L["WIZ_STEP_5"] = "5. Inventario"
 
-    L["WIZ_P1_TITLE"] = "Bienvenido a DistractionQoL v3.1.1"
+    L["WIZ_P1_TITLE"] = "Bienvenido a DistractionQoL v%s"
     L["WIZ_P1_DESC"] = "Herramientas esenciales de calidad de vida y preparación para jugadores de Míticas+ y Raid.\n\nEste asistente te permite configurar las funciones principales en menos de un minuto con total compatibilidad hacia otros addons instalados."
     L["WIZ_P1_BOX_TITLE"] = "Ventajas de DistractionQoL:"
     L["WIZ_P1_ITEM_1"] = "|cff00e5ff*|r Máximo rendimiento: Diseñado para mantener tus FPS al máximo, sin ralentizaciones en combate."
@@ -436,7 +436,7 @@ else
     L["WIZ_STEP_4"] = "4. Utilities"
     L["WIZ_STEP_5"] = "5. Inventory"
 
-    L["WIZ_P1_TITLE"] = "Welcome to DistractionQoL v3.1.1"
+    L["WIZ_P1_TITLE"] = "Welcome to DistractionQoL v%s"
     L["WIZ_P1_DESC"] = "Essential quality-of-life and readiness toolkit designed for Mythic+ and Raid players.\n\nThis wizard lets you configure the core features in under a minute with seamless compatibility alongside your other UI addons."
     L["WIZ_P1_BOX_TITLE"] = "Key DistractionQoL Advantages:"
     L["WIZ_P1_ITEM_1"] = "|cff00e5ff*|r Maximum performance: Built to keep your framerate smooth, with zero combat stutters."

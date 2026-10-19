@@ -4,7 +4,7 @@
 ## Notes-esES: Herramientas esenciales de calidad de vida, preparación y rendimiento para Míticas+ y Raid.
 ## Notes-esMX: Herramientas esenciales de calidad de vida, preparación y rendimiento para Míticas+ y Raid.
 ## Author: Sargeraz
-## Version: 3.1.1
+## Version: 4.0.0
 ## SavedVariables: DistractionQoLDB
 ## IconTexture: Interface\Icons\Spell_Shadow_DeathScream
 ## Category: Combat

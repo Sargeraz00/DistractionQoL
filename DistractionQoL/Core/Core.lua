@@ -47,7 +47,7 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
             DQ.Wizard:CheckAutoRun()
         end
         local L = DQ.L or {}
-        local ver = (DQ.Util and DQ.Util.GetVersion and DQ.Util.GetVersion()) or "3.1.1"
+        local ver = (DQ.Util and DQ.Util.GetVersion and DQ.Util.GetVersion()) or "4.0.0"
         DQ:Print(string.format(L["MSG_LOADED"] or "Addon cargado (v%s - WoW Midnight). Escribe |cffffcc00/qol|r para abrir el panel.", ver))
     end
 end)

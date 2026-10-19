@@ -206,7 +206,10 @@ local function BuildWizardWindow()
 
     local p1Title = p1:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     p1Title:SetPoint("TOPLEFT", p1, "TOPLEFT", 16, -16)
-    p1Title:SetText("|cff00e5ff" .. (L["WIZ_P1_TITLE"] or "Bienvenido a DistractionQoL v3.1.1") .. "|r")
+    local ver = (DQ.Util and DQ.Util.GetVersion and DQ.Util.GetVersion()) or "4.0.0"
+    local rawTitle = L["WIZ_P1_TITLE"] or "Bienvenido a DistractionQoL v%s"
+    local titleText = string.find(rawTitle, "%%s") and string.format(rawTitle, ver) or rawTitle
+    p1Title:SetText("|cff00e5ff" .. titleText .. "|r")
 
     local p1Sub = p1:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     p1Sub:SetPoint("TOPLEFT", p1Title, "BOTTOMLEFT", 0, -8)
