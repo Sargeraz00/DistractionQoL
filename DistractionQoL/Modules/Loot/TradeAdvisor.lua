@@ -14,99 +14,9 @@ local isCollecting = false
 local collectionTimer = nil
 
 -- Slot mapping for equipped item level comparison
-local SLOT_MAP = {
-    ["INVTYPE_HEAD"]           = { 1 },
-    ["INVTYPE_NECK"]           = { 2 },
-    ["INVTYPE_SHOULDER"]       = { 3 },
-    ["INVTYPE_BODY"]           = { 4 },
-    ["INVTYPE_CHEST"]          = { 5 },
-    ["INVTYPE_ROBE"]           = { 5 },
-    ["INVTYPE_WAIST"]          = { 6 },
-    ["INVTYPE_LEGS"]           = { 7 },
-    ["INVTYPE_FEET"]           = { 8 },
-    ["INVTYPE_WRIST"]          = { 9 },
-    ["INVTYPE_HAND"]           = { 10 },
-    ["INVTYPE_FINGER"]         = { 11, 12 },
-    ["INVTYPE_TRINKET"]        = { 13, 14 },
-    ["INVTYPE_CLOAK"]          = { 15 },
-    ["INVTYPE_WEAPON"]         = { 16, 17 },
-    ["INVTYPE_SHIELD"]         = { 17 },
-    ["INVTYPE_2HWEAPON"]       = { 16 },
-    ["INVTYPE_WEAPONMAINHAND"] = { 16 },
-    ["INVTYPE_WEAPONOFFHAND"]  = { 17 },
-    ["INVTYPE_HOLDABLE"]       = { 17 },
-}
-
--- Determines player's primary armor subclass
-local function GetPlayerArmorSubclass()
-    local _, class = UnitClass("player")
-    if class == "WARRIOR" or class == "PALADIN" or class == "DEATHKNIGHT" then
-        return 4 -- Plate
-    elseif class == "HUNTER" or class == "SHAMAN" or class == "EVOKER" then
-        return 3 -- Mail
-    elseif class == "ROGUE" or class == "DRUID" or class == "MONK" or class == "DEMONHUNTER" then
-        return 2 -- Leather
-    elseif class == "MAGE" or class == "PRIEST" or class == "WARLOCK" then
-        return 1 -- Cloth
-    end
-    return nil
-end
-
-local CLASS_WEAPON_MAP = {
-    ["WARRIOR"]     = { [0]=true, [1]=true, [2]=true, [3]=true, [4]=true, [5]=true, [6]=true, [7]=true, [8]=true, [10]=true, [13]=true, [15]=true, [18]=true },
-    ["PALADIN"]     = { [0]=true, [1]=true, [4]=true, [5]=true, [6]=true, [7]=true, [8]=true },
-    ["HUNTER"]      = { [0]=true, [1]=true, [2]=true, [3]=true, [6]=true, [7]=true, [8]=true, [10]=true, [13]=true, [15]=true, [18]=true },
-    ["ROGUE"]       = { [0]=true, [2]=true, [3]=true, [4]=true, [7]=true, [9]=true, [13]=true, [15]=true, [18]=true },
-    ["PRIEST"]      = { [4]=true, [10]=true, [15]=true, [19]=true },
-    ["DEATHKNIGHT"] = { [0]=true, [1]=true, [4]=true, [5]=true, [6]=true, [7]=true, [8]=true },
-    ["SHAMAN"]      = { [0]=true, [1]=true, [4]=true, [5]=true, [10]=true, [13]=true, [15]=true },
-    ["MAGE"]        = { [7]=true, [10]=true, [15]=true, [19]=true },
-    ["WARLOCK"]     = { [7]=true, [10]=true, [15]=true, [19]=true },
-    ["MONK"]        = { [0]=true, [4]=true, [6]=true, [7]=true, [10]=true, [13]=true },
-    ["DRUID"]       = { [4]=true, [5]=true, [6]=true, [10]=true, [13]=true, [15]=true },
-    ["DEMONHUNTER"] = { [0]=true, [7]=true, [9]=true, [13]=true },
-    ["EVOKER"]      = { [0]=true, [4]=true, [7]=true, [10]=true, [13]=true, [15]=true },
-}
-
--- Checks if an item is wearable by the player
-local function IsItemWearable(classID, subclassID, equipLoc)
-    if classID ~= Enum.ItemClass.Armor and classID ~= Enum.ItemClass.Weapon then
-        return false
-    end
-
-    -- Universal armor slots: Cloak, Rings, Trinkets, Neck
-    if equipLoc == "INVTYPE_CLOAK" or equipLoc == "INVTYPE_FINGER" or equipLoc == "INVTYPE_TRINKET" or equipLoc == "INVTYPE_NECK" then
-        return true
-    end
-
-    if classID == Enum.ItemClass.Armor then
-        local playerArmor = GetPlayerArmorSubclass()
-        if playerArmor and subclassID == playerArmor then
-            return true
-        end
-        -- Shields
-        if subclassID == 6 then
-            local _, class = UnitClass("player")
-            return (class == "WARRIOR" or class == "PALADIN" or class == "SHAMAN")
-        end
-        return false
-    end
-
-    if classID == Enum.ItemClass.Weapon then
-        local _, class = UnitClass("player")
-        local allowed = class and CLASS_WEAPON_MAP[class]
-        if allowed then
-            return allowed[subclassID] == true
-        end
-        return true
-    end
-
-    return true
-end
-
 -- Retrieves lowest equipped item level in the relevant slot(s)
 local function GetLowestEquippedIlvl(equipLoc)
-    local slots = SLOT_MAP[equipLoc]
+    local slots = DQ.GameData and DQ.GameData:GetEquipmentSlots(equipLoc)
     if not slots or #slots == 0 then return 0 end
 
     local lowestIlvl = 9999
@@ -115,7 +25,7 @@ local function GetLowestEquippedIlvl(equipLoc)
     for _, slotID in ipairs(slots) do
         local link = GetInventoryItemLink("player", slotID)
         if link then
-            local ilvl = C_Item.GetDetailedItemLevelInfo(link) or 0
+            local ilvl = (C_Item and C_Item.GetDetailedItemLevelInfo and C_Item.GetDetailedItemLevelInfo(link)) or 0
             if ilvl < lowestIlvl then
                 lowestIlvl = ilvl
                 hasAny = true
@@ -391,18 +301,26 @@ local function ProcessLootDrop(looterName, itemLink, retryCount)
         return
     end
 
-    -- Check wearable eligibility
-    local isWearable = IsItemWearable(classID, subclassID, itemEquipLoc)
+    -- Check wearable eligibility & upgrade using TradeAdvisorLogic
+    local _, playerClass = UnitClass("player")
+    local effectiveIlvl = (C_Item and C_Item.GetDetailedItemLevelInfo and C_Item.GetDetailedItemLevelInfo(itemLink)) or itemLevel or 0
+    local equippedIlvl = GetLowestEquippedIlvl(itemEquipLoc)
+
+    local eval = DQ.TradeAdvisorLogic and DQ.TradeAdvisorLogic.EvaluateDrop({
+        classID = classID,
+        subclassID = subclassID,
+        equipLoc = itemEquipLoc,
+        itemLevel = effectiveIlvl,
+    }, playerClass, equippedIlvl) or { isWearable = true, isUpgrade = false, ilvlDiff = 0 }
+
+    local isWearable = eval.isWearable
+    local isUpgrade = eval.isUpgrade
+    local ilvlDiff = eval.ilvlDiff
+
     local onlyEligible = DQ.Config:Get("loot", "onlyEligible")
     if onlyEligible and not isWearable then
         return
     end
-
-    -- Compare against equipped item level using detailed item level info
-    local effectiveIlvl = C_Item.GetDetailedItemLevelInfo(itemLink) or itemLevel or 0
-    local equippedIlvl = GetLowestEquippedIlvl(itemEquipLoc)
-    local isUpgrade = (effectiveIlvl and equippedIlvl > 0 and effectiveIlvl > equippedIlvl)
-    local ilvlDiff = isUpgrade and (effectiveIlvl - equippedIlvl) or 0
 
     local onlyUpgrades = DQ.Config:Get("loot", "onlyUpgrades")
     if onlyUpgrades and not isUpgrade then

@@ -15,6 +15,7 @@
 
 # --- Core Framework ---
 Core\Locales.lua
+Core\GameData.lua
 Core\Migration.lua
 Core\Config.lua
 Core\Util.lua
@@ -37,6 +38,7 @@ Modules\Automations\SafeResurrect.lua
 Modules\Automations\Automation.lua
 
 Modules\Optimizer\Optimizer.lua
+Modules\BagSort\BagSortLogic.lua
 Modules\BagSort\BagSort.lua
 
 Modules\Chat\ChatHistory.lua
@@ -44,7 +46,9 @@ Modules\MythicPlus\Keystone.lua
 Modules\MythicPlus\WipeRelease.lua
 Modules\Tooltip\TargetedBy.lua
 Modules\Tooltip\ItemCounts.lua
+Modules\Loot\TradeAdvisorLogic.lua
 Modules\Loot\TradeAdvisor.lua
+Modules\LFG\UtilityRadarLogic.lua
 Modules\LFG\UtilityRadar.lua
 Modules\MythicPlus\CommandHub.lua
 

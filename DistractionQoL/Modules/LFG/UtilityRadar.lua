@@ -46,14 +46,7 @@ local function AnalyzeGroupUtility(resultID)
     end
 
     local _, playerClass = UnitClass("player")
-    local playerProvidesLust = LUST_CLASSES[playerClass] or false
-    local playerProvidesBrez = BREZ_CLASSES[playerClass] or false
-
-    local hasLust = false
-    local hasBrez = false
-    local lustProviderName = nil
-    local brezProviderName = nil
-    local myClassCount = 0
+    local members = {}
 
     for i = 1, numMembers do
         local classToken, classLocalized
@@ -70,41 +63,18 @@ local function AnalyzeGroupUtility(resultID)
         end
 
         if classToken and not IsSecret(classToken) then
-            if LUST_CLASSES[classToken] then
-                hasLust = true
-                lustProviderName = classLocalized or classToken
-            end
-            if BREZ_CLASSES[classToken] then
-                hasBrez = true
-                brezProviderName = classLocalized or classToken
-            end
-            if classToken == playerClass then
-                myClassCount = myClassCount + 1
-            end
+            table.insert(members, {
+                classToken = classToken,
+                classLocalized = classLocalized,
+            })
         end
     end
 
-    -- High-probability recommendation logic:
-    -- Group is 3/5 or 4/5, lacks Bloodlust or BRez, and player's class provides it!
-    local isRecommended = false
     local highlightEnabled = DQ.Config:Get("lfgRadar", "highlightRecommended") ~= false
-    if highlightEnabled and numMembers >= 3 and numMembers < 5 then
-        if (not hasLust and playerProvidesLust) or (not hasBrez and playerProvidesBrez) then
-            isRecommended = true
-        end
+    if DQ.UtilityRadarLogic and DQ.UtilityRadarLogic.EvaluateGroup then
+        return DQ.UtilityRadarLogic.EvaluateGroup(members, playerClass, highlightEnabled)
     end
-
-    return {
-        numMembers          = numMembers,
-        hasLust             = hasLust,
-        hasBrez             = hasBrez,
-        lustProviderName    = lustProviderName,
-        brezProviderName    = brezProviderName,
-        myClassCount        = myClassCount,
-        playerProvidesLust  = playerProvidesLust,
-        playerProvidesBrez  = playerProvidesBrez,
-        isRecommended       = isRecommended,
-    }
+    return nil
 end
 
 -- Hook: Appends utility analysis to LFG search entry tooltip
