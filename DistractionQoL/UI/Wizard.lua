@@ -139,13 +139,21 @@ local function BuildWizardWindow()
 
     -- Modern flat obsidian backdrop
     f:SetBackdrop({
-        bgFile = "Interface\\Buttons\\WHITE8x8",
+        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
         edgeFile = "Interface\\Buttons\\WHITE8x8",
+        tile = false,
+        tileSize = 0,
         edgeSize = 1,
         insets = { left = 1, right = 1, top = 1, bottom = 1 },
     })
     f:SetBackdropColor(0.06, 0.06, 0.09, 0.98)
     f:SetBackdropBorderColor(0.0, 0.85, 1.0, 0.9) -- Electric Cyan
+
+    local wizBg = f:CreateTexture(nil, "BACKGROUND", nil, -8)
+    wizBg:SetPoint("TOPLEFT", f, "TOPLEFT", 1, -1)
+    wizBg:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -1, 1)
+    wizBg:SetColorTexture(0.06, 0.06, 0.09, 0.98)
+    f._dqSolidBg = wizBg
 
     -- Header bar
     local headerBar = f:CreateTexture(nil, "BORDER")

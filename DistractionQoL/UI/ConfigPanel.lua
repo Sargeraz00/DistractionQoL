@@ -29,15 +29,26 @@ function DQ.UI:CreatePanel()
     f:SetScript("OnDragStop", f.StopMovingOrSizing)
     f:Hide()
 
-    -- Modern flat dark backdrop
-    f:SetBackdrop({
-        bgFile = "Interface\\Buttons\\WHITE8x8",
-        edgeFile = "Interface\\Buttons\\WHITE8x8",
-        edgeSize = 1,
-        insets = { left = 1, right = 1, top = 1, bottom = 1 },
-    })
-    f:SetBackdropColor(0.06, 0.06, 0.08, 0.96)
-    f:SetBackdropBorderColor(0.22, 0.22, 0.26, 1)
+    -- Modern flat obsidian backdrop
+    if DQ.Theme and DQ.Theme.ApplyWindowStyle then
+        DQ.Theme.ApplyWindowStyle(f)
+    else
+        f:SetBackdrop({
+            bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+            edgeFile = "Interface\\Buttons\\WHITE8x8",
+            tile = false,
+            tileSize = 0,
+            edgeSize = 1,
+            insets = { left = 1, right = 1, top = 1, bottom = 1 },
+        })
+        f:SetBackdropColor(0.06, 0.06, 0.08, 0.98)
+        f:SetBackdropBorderColor(0.22, 0.22, 0.26, 1)
+        local bg = f:CreateTexture(nil, "BACKGROUND", nil, -8)
+        bg:SetPoint("TOPLEFT", f, "TOPLEFT", 1, -1)
+        bg:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -1, 1)
+        bg:SetColorTexture(0.06, 0.06, 0.08, 0.98)
+        f._dqSolidBg = bg
+    end
 
     -- Header background bar (26px high)
     local headerBar = f:CreateTexture(nil, "BACKGROUND", nil, -5)
@@ -128,13 +139,21 @@ function DQ.UI:CreatePanel()
     sidebar:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 1, 48)
     sidebar:SetWidth(155)
     sidebar:SetBackdrop({
-        bgFile = "Interface\\Buttons\\WHITE8x8",
+        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
         edgeFile = "Interface\\Buttons\\WHITE8x8",
+        tile = false,
+        tileSize = 0,
         edgeSize = 1,
         insets = { left = 1, right = 1, top = 1, bottom = 1 },
     })
     sidebar:SetBackdropColor(0.04, 0.04, 0.06, 0.98)
     sidebar:SetBackdropBorderColor(0.18, 0.18, 0.22, 1)
+
+    local sidebarBg = sidebar:CreateTexture(nil, "BACKGROUND", nil, -8)
+    sidebarBg:SetPoint("TOPLEFT", sidebar, "TOPLEFT", 1, -1)
+    sidebarBg:SetPoint("BOTTOMRIGHT", sidebar, "BOTTOMRIGHT", -1, 1)
+    sidebarBg:SetColorTexture(0.04, 0.04, 0.06, 0.98)
+    sidebar._dqSolidBg = sidebarBg
     f.sidebar = sidebar
 
     local tabDefs = {
@@ -175,6 +194,7 @@ function DQ.UI:CreatePanel()
             end
         end
     end
+    f.ShowTab = ShowTab
 
     local btnHeight = 34
     local btnWidth = 151
@@ -434,6 +454,17 @@ function DQ.UI:Toggle()
         panel:Hide()
     else
         panel:Show()
+    end
+end
+
+-- Shows a specific tab directly in the configuration panel
+function DQ.UI:ShowTab(tabId)
+    local panel = self:CreatePanel()
+    if not panel:IsShown() then
+        panel:Show()
+    end
+    if panel.ShowTab then
+        panel.ShowTab(tabId)
     end
 end
 

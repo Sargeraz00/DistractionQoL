@@ -1,14 +1,30 @@
-# DistractionQoL — World of Warcraft Addon (WoW 12.1.5 Midnight)
+# DistractionQoL — World of Warcraft Addon (WoW 12.x Midnight)
+
+![Version](https://img.shields.io/badge/version-4.1.1-00e5ff) ![WoW](https://img.shields.io/badge/WoW-Midnight%2012.x-8a2be2) ![Locales](https://img.shields.io/badge/locales-esES%20%7C%20esMX%20%7C%20enUS-00ff88) ![Tests](https://img.shields.io/badge/offline%20tests-150%20passing-brightgreen)
 
 An **ultra-lightweight**, event-driven Quality-of-Life (QoL) and performance toolkit engineered specifically for Raiders, Mythic+, and Delve players. Originally born as an anti-accidental spirit release reminder ("BaneBurro"), **DistractionQoL** has evolved into a zero-bloat, high-efficiency suite designed to solve everyday raid frustrations with virtually 0% CPU and memory footprint.
 
 ---
 
 ## ⚡ Why "Lightweight"? Zero Bloat Philosophy
-- **Zero continuous `OnUpdate` polling**: Everything is strictly event-driven (`READY_CHECK`, `MERCHANT_SHOW`, `PLAYER_DEAD`, `RESURRECT_REQUEST`, etc.).
+- **Zero continuous `OnUpdate` polling**: Everything is strictly event-driven (`READY_CHECK`, `MERCHANT_SHOW`, `PLAYER_DEAD`, `RESURRECT_REQUEST`, `UNIT_AURA`, etc.).
 - **Zero runtime garbage collection churn**: No table creation in combat paths. Memory cleanup is executed on loading screens (`PLAYER_ENTERING_WORLD`), avoiding combat frame drops.
-- **Ultra-low memory footprint**: Under ~100 KB total memory usage across all modules.
-- **Taint-safe in modern WoW**: Built and tested specifically for WoW 12.1.5 (Midnight) and modern retail UI architecture.
+- **Ultra-low memory footprint**: Minimal memory usage across all modules.
+- **Taint-safe & Midnight-hardened**: Built for WoW 12.x (Midnight). All chat, unit, tooltip, and combat-log strings are validated with `issecretvalue()` before any string operation, and protected frames are never touched during `InCombatLockdown()`.
+
+---
+
+## 🆕 What's New in 4.1.x
+
+| Area | Highlights |
+| :--- | :--- |
+| 🧪 **Interactive Consumables HUD** | Clickable secure bar for Flask, Food, Augment Rune and Weapon Oil, with **mouse wheel rotation** between carried items. |
+| 🍷 **Midnight Consumables Catalog** | Only current-expansion items are offered (e.g. *Flask of the Shattered Sun*, *Void-Touched Augment Rune*, Midnight cooking). Older TWW/Dragonflight items are ignored. |
+| 📦 **Stack Consolidation** | Multiple stacks of the same item are merged into a single entry with a total count. |
+| 🤝 **EllesmereUI Handover** | When entering a raid/dungeon with EllesmereUI's consumables reminder active, you choose who manages the feature. |
+| 🛡️ **Secret Values Hardening** | Fixed `UNIT_DIED` secret-string crash in M+ Wipe Release; `TargetedBy` and `ItemCounts` tooltips are fully shielded. |
+| 🌐 **Strict Localization** | 100% `esES` / `esMX` Spanish and `enUS` English (universal fallback). Zero language mixing. |
+| 🎨 **UI Polish** | Material-style consumables bar, re-laid-out Tooltips tab without clipping, LFG radar badges no longer overlap Blizzard data. |
 
 ---
 
@@ -16,53 +32,80 @@ An **ultra-lightweight**, event-driven Quality-of-Life (QoL) and performance too
 
 ### 1. 🛡️ Anti-Release Guard (Spirit Release Protection)
 - **Accidental Release Prevention**: Intercepts clicks on "Release Spirit" during combat, raid bosses, or M+ keys to avoid wasting battle resurrections or dungeon timers.
-- **Emergency Wipe Bypass**: Hold the `SHIFT` key and click "Release Spirit" to immediately release normally when your raid leader calls for a wipe.
-- **Visual Banner & Audio**: Signature high-contrast warning banner and alert audio (`Bane.ogg`), with instant muting via `/qol mute`.
+- **Emergency Wipe Bypass**: Hold `SHIFT` and click "Release Spirit" to release normally when your raid leader calls the wipe.
+- **Visual Banner & Audio**: High-contrast warning banner and alert audio (`Bane.ogg`), instantly mutable via `/qol mute`.
 
 ### 2. ⏱️ Raid Flow & Readiness (Anti-Distraction)
-- **Taskbar Flash on Ready Check & Pull Timers**: Calls native `FlashClientIcon()` when a Ready Check is started or a DBM/BigWigs pull timer begins, alerting players looking at Discord, YouTube, or a second monitor.
-- **Master Channel Audio Ping**: Plays an audible ping through the Master sound channel on Ready Check so you never miss a pull.
-- **Pre-Pull Consumables Check**: Automatically checks if you have **Food (Well Fed)**, **Flask / Phial**, **Augment Rune**, and **Weapon Enchant / Oil** when a Ready Check is called. Zero polling overhead.
+- **Taskbar Flash on Ready Check & Pull Timers**: Calls `FlashClientIcon()` on Ready Check or DBM/BigWigs pull timers.
+- **Master Channel Audio Ping**: Audible ping through the Master channel on Ready Check.
+- **Pre-Pull Consumables Check**: On Ready Check, verifies **Food**, **Flask**, **Augment Rune** and **Weapon Enchant**, prints the missing list to chat and flashes a raid warning banner.
 
-### 3. ⚡ Quality-of-Life Automations
-- **Smart Auto-Resurrection**: Automatically accepts resurrections after wipes without manual clicking. Blocks Battle Resurrections during active combat by default to protect player positioning.
-- **Auto-Repair**: Repairs gear automatically when interacting with repair vendors, with support for Guild Bank funds.
-- **Auto-Sell Junk**: Instantly sells grey trash items upon speaking to merchants, printing gold earned to chat.
-- **Auto-Skip Watched Cinematics**: Automatically skips in-raid cutscenes and movies you have already seen.
-- **Block Duels in Instances**: Silently blocks annoying duel requests and pet battle challenges during dungeon or raid runs.
-- **Fast Loot**: Instant zero-delay loot pickup at 0ms latency.
-- **Reverse Bag Sort & Reagent Stash**: Inverted inventory sorting that automatically detects profession/crafting reagents, stashes them into your Reagent Bag (Bag 5), places overflow reagents at the top, and groups all other items (gear, consumables, junk) at the bottom. Fully integrates with Blizzard native bags and **EllesmereUI Bags** (either seamlessly overriding its sort button without confirmation popups, or displaying a dedicated cyan button).
+### 3. 🧪 Interactive Consumables HUD *(new)*
+- **One-click consumption**: Secure action buttons (`SecureActionButtonTemplate`) use the item straight from your bags. Compatible with `ActionButtonUseKeyDown`.
+- **Mouse wheel rotation**: Hover a slot and scroll to cycle between every flask / food / rune / oil you carry — perfect for alternate specs or saving top-rank consumables on lower keys. A `1/3` badge shows the current position.
+- **Weapon oils on both hands**: Left-click applies to Main Hand, right-click to Off-Hand.
+- **Live buff indicators**: Active buffs get a green border and checkmark; missing ones stay neutral. Auto-hides when everything is active (unless opened manually).
+- **Combat-safe**: All updates, shows and hides are deferred to `PLAYER_REGEN_ENABLED` while in combat.
+- **Draggable & persistent**: Position is saved per account in `DistractionQoLDB`.
 
-### 4. 🚀 Raid Performance & FPS Optimizer
-- **One-Click Raid Graphics Optimizer**: Applies proven CVars specifically tuned for 20-30 player raids and Mythic+ dungeons to eliminate single-threaded CPU bottlenecks.
-- **Mechanics Visibility Guaranteed**: **Projected Textures (`raidGraphicsProjectedTextures`) remain strictly enabled** so floor swirlies and ground telegraphs remain 100% visible.
-- **Full Reversibility**: Includes instant **Guardar Actual (Backup)** and **Restaurar (Restore)**.
-- **Loading Screen Memory Cleanup**: Cleans Lua garbage collection (`collectgarbage("collect")`) during loading screens, preventing combat frame stutter.
+### 4. ⚡ Quality-of-Life Automations
+- **Smart Auto-Resurrection**: Accepts resurrections after wipes; blocks Battle Rez auto-accept during active combat by default.
+- **Auto-Repair** (with Guild Bank funds support) and **Auto-Sell Junk**.
+- **Auto-Skip Watched Cinematics** and **Block Duels in Instances**.
+- **Fast Loot**: Instant zero-delay loot pickup.
+- **Reverse Bag Sort & Reagent Stash**: Stashes profession reagents into the Reagent Bag and groups other items at the bottom. Integrates with Blizzard bags and **EllesmereUI Bags**.
+- **Chat History Recall**: Arrow Up / Arrow Down recalls previous commands and messages, persisted across reloads.
 
-### 5. 🤝 Intelligent Conflict Resolution & External Addon Compatibility
-- **EllesmereUI & ElvUI Overlap Detection**: Detects overlapping features (*Auto-Repair, Auto-Sell Junk, Fast Loot, Auto-Skip Cinematics, and Bag Sorting*).
-- **Interactive Decision Modal**: When an overlapping action is triggered, a sleek obsidian prompt asks whether **DistractionQoL** or the external suite (**EllesmereUI** or **ElvUI**) should manage that specific feature.
-- **"Don't Ask Again" Checkbox**: Saves your preference permanently with one click.
-- **Live Compatibility Dashboard**: View active conflicts, switch preferences between addons, or reset prompts anytime under `/qol` -> **[Compatibilidad / Compatibility]**.
+### 5. 🗝️ Mythic+ Toolkit
+- **M+ Command Hub** (`/qol hub`): Seasonal Midnight dungeons with personal records, 1-click Hero's Path teleports, and a party keystone matrix with 1-click group announcement.
+- **Keystone Auto-Slotter**: Slots your key into the Font of Power instantly.
+- **Full Wipe Auto-Release**: Detects a full party wipe after combat and releases to save key timer (secret-value safe).
+- **Great Vault Shortcut** (`/qol vault`).
+
+### 6. 💰 Loot, LFG & Tooltips
+- **Tradeable Loot Advisor**: At run/boss completion, lists tradeable party loot usable by your class, flags ilvl upgrades, and offers a polite 1-click whisper.
+- **LFG Utility Radar**: Analyzes Premade Group Finder listings for missing Bloodlust / Battle Rez and class saturation, highlighting groups where your class fills the gap.
+- **Item Counts Tooltip**: Breakdown across Bags, Bank and Warband Bank, plus crafting reagent expansion tag (current expansion highlighted).
+- **Targeted By Tooltip**: Shows how many tanks / healers / DPS in your group are targeting the hovered NPC.
+
+### 7. 🚀 Raid Performance & FPS Optimizer
+- **One-Click Raid Graphics Optimizer** tuned for 20-30 player raids and Mythic+.
+- **Mechanics Visibility Guaranteed**: `raidGraphicsProjectedTextures` stays enabled so ground telegraphs remain visible.
+- **Full Reversibility** with Backup / Restore snapshots.
+- **Loading Screen Memory Cleanup** to prevent combat stutter.
+
+### 8. 🤝 Intelligent Conflict Resolution
+- **EllesmereUI & ElvUI Overlap Detection**: Auto-Repair, Auto-Sell Junk, Fast Loot, Auto-Skip Cinematics, Bag Sorting and **Consumables Reminder**.
+- **Raid-Entry Consumables Prompt** *(new)*: On entering a raid or dungeon with EllesmereUI's consumables module active, a modal lets you pick the manager and briefly explains DistractionQoL's advantages (mouse wheel rotation, Midnight-only catalog, stack consolidation, dual-hand oils).
+- **Real-time Handover**: The non-selected addon's feature is disabled/re-enabled live — no reload required.
+- **"Don't Ask Again"** persistence, plus a live dashboard under `/qol` → **Compatibility**, and a gear button `[⚙]` on the consumables bar.
+
+### 9. 🧙 First-Time Setup Wizard
+- Step-by-step onboarding (`/qol install`) with plain-language explanations, fully localized.
 
 ---
 
 ## 🕹️ Available Commands
 
-Primary commands: `/qol` (or `/dqol`, `/distraction`). The legendary `/burro` command is preserved as an alias for the memes!
+Primary commands: `/qol` (or `/dqol`, `/distraction`). The legendary `/burro` alias is preserved for the memes!
 
 | Command | Description |
 | :--- | :--- |
 | `/qol` *(or `/burro`)* | Opens or closes the tabbed configuration console. |
-| `/qol sort` | Sorts bags in reverse order & moves profession materials to reagent bag. |
-| `/qol check` | Manually checks active raid consumables (Food, Flask, Rune, Weapon). |
-| `/qol fps` | Toggles between Optimal Raid FPS Mode and your original graphics. |
-| `/qol fps save` | Saves current graphics settings as the backup snapshot. |
-| `/qol fps restore` | Restores original graphics settings from backup. |
-| `/qol mute` | Mutes or unmutes the warning alert audio. |
-| `/qol autores` | Toggles auto-accepting resurrection prompts. |
-| `/qol test` | Instantly triggers the giant warning banner and audio. |
-| `/qol sim` | Simulates the death dialog to test live click blocking (SHIFT+Click to close). |
+| `/consumables` *(or `/consumible`, `/frascos`)* | Opens the interactive Consumables HUD and shows the active controller. |
+| `/consumables choose` | Re-opens the DistractionQoL vs EllesmereUI manager choice dialog. |
+| `/qol check` *(or `buffs`, `consumables`)* | Same as `/consumables` (consumables HUD + manager). |
+| `/qol conflict` *(or `compat`)* | Opens the consumables manager choice dialog. |
+| `/qol install` | Opens the first-time setup wizard. |
+| `/qol hub` *(or `/keys`)* | M+ Command Hub (teleports & party keystone matrix). |
+| `/qol vault` | Opens the Great Vault from anywhere. |
+| `/qol sort` | Reverse bag sort & moves reagents to the reagent bag. |
+| `/qol loot` | Simulates the Tradeable Loot Advisor popup. |
+| `/qol fps` | Toggles Optimal Raid FPS ↔ original settings (`save` / `restore` sub-commands). |
+| `/qol mute` | Mutes or unmutes the alert audio. |
+| `/qol autores` | Toggles auto-accepting resurrections. |
+| `/qol test` | Triggers the giant warning banner and audio. |
+| `/qol sim` | Simulates the death dialog to test click blocking (`stop` to close). |
 | `/qol sound` | Tests audio playback. |
 | `/qol status` | Displays protection, auto-res, sound, and FPS status in chat. |
 
@@ -70,16 +113,17 @@ Primary commands: `/qol` (or `/dqol`, `/distraction`). The legendary `/burro` co
 
 ## ⚙️ Configuration Console
 
-Type `/qol` (or `/burro`) in chat or access it via **Game Menu (ESC) -> Options -> AddOns -> DistractionQoL**.
+Type `/qol` in chat or open **Game Menu (ESC) → Options → AddOns → DistractionQoL**.
 
-The interface features an **Obsidian & Neon Cyan** design with tabbed navigation:
-- **[Liberación / Release]**: Dungeons, Raids (Normal, Heroico, Mítico), Mundo Abierto, Sonido Bane.
-- **[Flujo Raid / Raid Flow]**: Parpadear en barra de tareas, Audio en Ready Check, Chequeo de Consumibles.
-- **[Automatizaciones / Automation]**: Auto-Res, Auto-Reparar (Fondos de Hermandad), Auto-Vender Basura, Saltar Cinemáticas, Bloquear Duelos, Fast Loot.
-- **[Rendimiento / Performance]**: Guardar Actual, Máximo FPS, Restaurar, Limpieza de memoria en pantallas de carga.
-- **[Compatibilidad / Compatibility]**: Monitor de conflictos en tiempo real con EllesmereUI y ElvUI, selectores directos por función y botón de restablecer avisos.
+The interface features an **Obsidian & Neon Cyan** design system (`DQ.UI.Theme`) with sidebar navigation:
+- **Release**: Dungeons, Raids (Normal / Heroic / Mythic), Open World, alert sound.
+- **Raid Flow**: Taskbar flash, Ready Check audio, consumables check.
+- **Automation**: Auto-Res, Auto-Repair, Auto-Sell, Skip Cinematics, Block Duels, Fast Loot, Bag Sort.
+- **Tooltips**: Item counts, reagent expansion tag, Targeted By, Loot Advisor filters.
+- **Performance**: Backup, Max FPS, Restore, loading-screen memory cleanup.
+- **Compatibility**: Real-time conflict monitor with EllesmereUI / ElvUI, per-feature selectors and prompt reset.
 
-Seamlessly skins with **EllesmereUI** (Official Skinning API) and **ElvUI**.
+All labels follow the client language: **Spanish** for `esES` / `esMX`, **English** for every other locale.
 
 ---
 
@@ -87,29 +131,43 @@ Seamlessly skins with **EllesmereUI** (Official Skinning API) and **ElvUI**.
 
 ```
 DistractionQoL/ (Repository Root)
-├── .gitattributes          # Normalization & export-ignore for CurseForge / Git Archive
-├── .gitignore               # Ignore rules (OS, IDE, WoW cache, zip packages)
-├── .pkgmeta                 # CurseForge / BigWigs packager configuration
-├── package.ps1              # Script to package clean CurseForge zip archive
-├── README.md                # Repository documentation
-└── DistractionQoL/          # Pure Addon Folder (CurseForge release package)
-    ├── DistractionQoL.toc   # Addon metadata & load order (Interface: 120105)
-    ├── Locales.lua          # Multi-language dictionary (esES, esMX, enUS)
-    ├── Migration.lua        # Backward-compatible database migration from BaneBurro
-    ├── Config.lua           # Central configuration store, defaults, and conflict persistence
-    ├── Detection.lua        # Content, difficulty, combat, and consumable detection logic
-    ├── Alert.lua            # Giant visual frame renderer and audio player
-    ├── Hook.lua             # Taint-free release interception (GameDialogMixin & OnButton1)
-    ├── ConflictResolver.lua # Real-time conflict detector & prompt resolver for EllesmereUI/ElvUI
-    ├── RaidFlow.lua         # Taskbar flash, Ready Check audio ping, and pre-pull consumables check
-    ├── Automation.lua       # Auto-Res, Auto-Repair, Auto-Sell, Auto-Skip Movies, Duel block, Fast Loot
-    ├── Optimizer.lua        # Raid FPS & CVars optimizer with backup/restore & loading GC cleanup
-    ├── BagSort.lua          # Reverse bag sorting & profession reagent stasher with bag frame button
-    ├── UI.lua               # 5-tab obsidian settings window with EllesmereUI & ElvUI skinning
-    ├── Core.lua             # Addon lifecycle events and slash command dispatcher (/qol, /burro)
-    ├── Bane.ogg             # Audio alert asset
-    ├── Bane.mp3             # Audio alert asset (fallback)
-    ├── sound_on.png / .tga  # UI audio indicator icon
-    └── sound_off.png / .tga # UI audio indicator icon
+├── AGENTS.md / GEMINI.md        # Engineering rules (Git, SemVer, architecture, localization, QA)
+├── .luacheckrc                  # Static analysis configuration
+├── .pkgmeta / package.ps1       # CurseForge packaging
+├── tests/
+│   ├── mock_wow.lua             # Minimal WoW API mocks for offline testing
+│   └── run_tests.lua            # Offline unit test suite (150 tests)
+└── DistractionQoL/              # Pure addon folder (release package)
+    ├── DistractionQoL.toc       # Metadata & load order (single source of truth for version)
+    ├── Core/                    # Locales, GameData, Migration, Config, Util, Detection, Modules, Commands, Core
+    ├── Modules/
+    │   ├── Compatibility/       # ConflictResolver (EllesmereUI / ElvUI handover)
+    │   ├── ReleaseGuard/        # Alert, Hook (taint-free release interception)
+    │   ├── RaidFlow/            # RaidFlow, ConsumablesLogic (pure), ConsumablesBar (secure HUD)
+    │   ├── Automations/         # Vendor, FastLoot, Cinematics, SafeResurrect, Automation
+    │   ├── Optimizer/           # Raid FPS & CVar optimizer
+    │   ├── BagSort/             # BagSortLogic (pure), BagSort
+    │   ├── Chat/                # ChatHistory
+    │   ├── MythicPlus/          # Keystone, WipeRelease, CommandHub
+    │   ├── Tooltip/             # TargetedBy, ItemCounts
+    │   ├── Loot/                # TradeAdvisorLogic (pure), TradeAdvisor
+    │   └── LFG/                 # UtilityRadarLogic (pure), UtilityRadar
+    ├── UI/                      # Theme, Components, ConfigPanel, Wizard, Tabs/
+    └── Media/                   # Sounds (Bane.ogg/.mp3) & Textures (sound_on/off)
 ```
 
+---
+
+## 🧑‍💻 Development & Quality Assurance
+
+- **Business logic is decoupled** into pure `*Logic.lua` modules (consumables, bag sort, loot, LFG) and covered by offline tests.
+- **Declarative registration**: modules via `DQ.Modules:Register(...)`, slash commands via `DQ:RegisterCommand(...)`.
+- **Localization policy**: every user-facing string lives in `Core/Locales.lua` (`DQ.L`), fully translated for `esES` / `esMX` and `enUS`. Mixing languages in a single view is forbidden, and a dedicated test suite validates both locales.
+- **Pre-commit checks**:
+
+```powershell
+lua tests/run_tests.lua                                                   # must pass 100%
+Get-ChildItem -Recurse -Filter *.lua DistractionQoL | % { luac -p $_.FullName }   # syntax check
+```
+
+- **Versioning**: Semantic Versioning, with `## Version:` in `DistractionQoL.toc` as the single source of truth (read at runtime via `DQ.Util.GetVersion()`).

@@ -19,20 +19,36 @@ end
 -- Checks and notifies missing consumables
 function DQ.RaidFlow:CheckConsumables(isManual)
     if not DQ.Detection or not DQ.Detection.CheckPlayerConsumables then return end
-    local missing = DQ.Detection:CheckPlayerConsumables()
+    local missing, missingKeys = DQ.Detection:CheckPlayerConsumables()
     local L = DQ.L or {}
 
-    if #missing > 0 then
+    local hasMissing = (missing and #missing > 0)
+    if hasMissing then
         local missingStr = table.concat(missing, ", ")
         local fmt = L["MSG_MISSING_CONSUMABLES"] or "|cffff3333[¡Aviso de Consumibles!]|r Te falta: %s"
-        PrintMsg(string.format(fmt, "|cffffcc00" .. missingStr .. "|r"))
+        local alertText = string.format(fmt, "|cffffcc00" .. missingStr .. "|r")
+        PrintMsg(alertText)
+
+        -- Flash on-screen raid notice banner
+        if RaidNotice_AddMessage and RaidWarningFrame then
+            pcall(RaidNotice_AddMessage, RaidWarningFrame, alertText, ChatTypeInfo["RAID_WARNING"] or { r = 1, g = 0.3, b = 0.3 })
+        end
 
         -- Play a short alert click/warning sound
         if PlaySound then
             pcall(PlaySound, SOUNDKIT.RAID_WARNING or 8959, "Master")
         end
-    elseif isManual then
+    else
         PrintMsg(L["ALL_BUFFS_OK"] or "|cff00ff00¡Todos los consumibles activos! Listo para el pull.|r")
+    end
+
+    -- Trigger interactive clickable Consumables Bar
+    if DQ.ConsumablesBar then
+        if isManual then
+            DQ.ConsumablesBar:OpenManager()
+        elseif (hasMissing or (missingKeys and next(missingKeys))) and DQ.ConsumablesBar.ShowBar then
+            DQ.ConsumablesBar:ShowBar(missingKeys, false)
+        end
     end
 end
 
@@ -112,8 +128,53 @@ function DQ.RaidFlow:Init()
                 local fmt = L["MSG_LFG_PROPOSAL"] or "¡Llamada de Buscador! Tu grupo de mazmorra o banda está listo."
                 PrintMsg("|cff00ff00" .. fmt .. "|r")
             end
+
+        -- 5. RAID ENTRY CONFLICT CHECK
+        elseif event == "PLAYER_ENTERING_WORLD" or event == "ZONE_CHANGED_NEW_AREA" then
+            if C_Timer and C_Timer.After then
+                C_Timer.After(2, function()
+                    DQ.RaidFlow:CheckRaidConsumablesConflict(false)
+                end)
+            else
+                DQ.RaidFlow:CheckRaidConsumablesConflict(false)
+            end
         end
     end)
 
+    frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+    frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+
     self.frame = frame
+end
+
+local hasPromptedConsumablesRaid = false
+
+-- Checks for consumables conflict with EllesmereUI upon entering raid, dungeon, or group
+function DQ.RaidFlow:CheckRaidConsumablesConflict(forcePrompt)
+    if not DQ.ConflictResolver then return end
+
+    local inInstance, instanceType = IsInInstance and IsInInstance()
+    local isRaidOrGroup = (inInstance and (instanceType == "raid" or instanceType == "party"))
+                       or (IsInRaid and IsInRaid())
+                       or (IsInGroup and IsInGroup())
+                       or forcePrompt
+
+    if not isRaidOrGroup then return end
+
+    local ext = DQ.ConflictResolver:DetectConflict("consumables") or (forcePrompt and "EllesmereUI")
+    if not ext then return end
+
+    local dontAsk = DQ.ConflictResolver:GetDontAskAgain("consumables")
+    local choice = DQ.ConflictResolver:GetChoice("consumables")
+
+    if not dontAsk or not choice or forcePrompt then
+        if not hasPromptedConsumablesRaid or forcePrompt then
+            hasPromptedConsumablesRaid = true
+            DQ.ConflictResolver:QueuePrompt("consumables", ext, function(selectedChoice, remember)
+                DQ.ConflictResolver:SetChoice("consumables", selectedChoice, remember)
+            end)
+        end
+    else
+        DQ.ConflictResolver:ApplyHandover("consumables", choice, ext)
+    end
 end

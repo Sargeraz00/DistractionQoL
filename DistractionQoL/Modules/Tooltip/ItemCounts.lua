@@ -152,22 +152,29 @@ local function GetReagentExpansionInfo(itemID, itemLink)
     return expacName, isCurrent, expacID
 end
 
+-- Helper to safely check secret values in Midnight 12.x
+local function IsSecret(val)
+    return issecretvalue and issecretvalue(val)
+end
+
 -- Tooltip post-call handler
 local function OnTooltipSetItem(tooltip, data)
     if not tooltip then return end
+
+    if data and data.id and IsSecret(data.id) then return end
 
     -- Extract itemID
     local itemID = data and data.id
     local itemLink = nil
     if not itemID then
         local _, link = tooltip:GetItem()
-        if link then
+        if link and not IsSecret(link) then
             itemLink = link
             itemID = C_Item.GetItemInfoInstant and C_Item.GetItemInfoInstant(link)
         end
     end
 
-    if not itemID then return end
+    if not itemID or IsSecret(itemID) then return end
 
     local cfg = DQ.Config and DQ.Config:Get("tooltip")
     if not cfg then return end

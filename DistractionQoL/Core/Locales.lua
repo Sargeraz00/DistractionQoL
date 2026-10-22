@@ -291,6 +291,30 @@ if isSpanish then
     L["HUB_KEYS_ANNOUNCE_HDR"] = "DistractionQoL — Llaves del Grupo:"
     L["HUB_NOT_LEARNED"] = "Hechizo aún no desbloqueado (+10 requerido)"
     L["HUB_DISABLED"] = "El Centro de Mazmorras M+ está desactivado en la configuración."
+
+    -- Consumables & Readiness (Spanish)
+    L["FOOD_BUFF"] = "Comida (Bien alimentado)"
+    L["FLASK_BUFF"] = "Frasco"
+    L["RUNE_BUFF"] = "Runa de aumento"
+    L["WEAPON_BUFF"] = "Aceite / Piedra de arma"
+    L["MSG_MISSING_CONSUMABLES"] = "|cffff3333[¡Aviso de Consumibles!]|r Te falta: %s"
+    L["ALL_BUFFS_OK"] = "|cff00ff00¡Todos los consumibles activos! Listo para el pull.|r"
+    L["CONSUMABLES_BAR_TITLE"] = "CONSUMIBLES"
+    L["CONSUMABLES_CAT_FLASK"] = "FRASCO"
+    L["CONSUMABLES_CAT_FOOD"] = "COMIDA"
+    L["CONSUMABLES_CAT_RUNE"] = "RUNA"
+    L["CONSUMABLES_CAT_WEAPON"] = "ARMA"
+    L["CONSUMABLES_WHEEL_CYCLE"] = "|cff00e5ff[Rueda del Ratón]|r Gira para alternar (%d/%d)"
+    L["CONSUMABLES_DISTINCT_COUNT"] = "|cff888888Tienes %d consumibles distintos en tus bolsas.|r"
+    L["CONSUMABLES_WEAPON_CLICK_HINT"] = "|cffffcc00Clic Izq:|r Mano Principal | |cffffcc00Clic Der:|r Mano Secundaria"
+    L["CONSUMABLES_NO_STOCK"] = "|cffff4444[Sin existencias]|r %s"
+    L["CONSUMABLES_NO_STOCK_DESC"] = "No tienes este consumible de Midnight en tus bolsas."
+    L["CONSUMABLES_GEAR_TITLE"] = "Control de Consumibles"
+    L["CONSUMABLES_GEAR_MANAGED_BY"] = "Gestionado actualmente por: |cff00ff88%s|r"
+    L["CONSUMABLES_GEAR_HINT"] = "|cffffcc00Clic:|r Abrir selector de conflicto (DistractionQoL vs EllesmereUI)."
+    L["CONSUMABLES_MSG_CTRL_STATUS"] = "Control activo: |cff00ff88%s|r. Escribe |cffffcc00/consumables choose|r o pulsa |cffffcc00[⚙]|r para cambiar."
+    L["CONSUMABLES_CMD_DESC"] = "Abre el gestor de consumibles interactivo y selector de control."
+    L["CONFLICTS_CMD_DESC"] = "Abre el diálogo de elección de gestor (DistractionQoL vs EllesmereUI)."
 else
     -- ==========================================================
     -- ENGLISH (enUS / enGB and all other locales)
@@ -575,6 +599,30 @@ else
     L["HUB_KEYS_ANNOUNCE_HDR"] = "DistractionQoL — Party Keystones:"
     L["HUB_NOT_LEARNED"] = "Spell not yet unlocked (+10 required)"
     L["HUB_DISABLED"] = "M+ Dungeon Command Hub is disabled in configuration."
+
+    -- Consumables & Readiness (English)
+    L["FOOD_BUFF"] = "Food (Well Fed)"
+    L["FLASK_BUFF"] = "Flask"
+    L["RUNE_BUFF"] = "Augment Rune"
+    L["WEAPON_BUFF"] = "Weapon Enchant (Oil / Stone)"
+    L["MSG_MISSING_CONSUMABLES"] = "|cffff3333[Consumables Warning!]|r Missing: %s"
+    L["ALL_BUFFS_OK"] = "|cff00ff00All consumables active! Ready for pull.|r"
+    L["CONSUMABLES_BAR_TITLE"] = "CONSUMABLES"
+    L["CONSUMABLES_CAT_FLASK"] = "FLASK"
+    L["CONSUMABLES_CAT_FOOD"] = "FOOD"
+    L["CONSUMABLES_CAT_RUNE"] = "RUNE"
+    L["CONSUMABLES_CAT_WEAPON"] = "WEAPON"
+    L["CONSUMABLES_WHEEL_CYCLE"] = "|cff00e5ff[Mouse Wheel]|r Scroll to cycle (%d/%d)"
+    L["CONSUMABLES_DISTINCT_COUNT"] = "|cff888888You have %d distinct consumables in bags.|r"
+    L["CONSUMABLES_WEAPON_CLICK_HINT"] = "|cffffcc00Left-Click:|r Main Hand | |cffffcc00Right-Click:|r Off-Hand"
+    L["CONSUMABLES_NO_STOCK"] = "|cffff4444[Out of Stock]|r %s"
+    L["CONSUMABLES_NO_STOCK_DESC"] = "You have none of this Midnight consumable in your bags."
+    L["CONSUMABLES_GEAR_TITLE"] = "Consumables Management"
+    L["CONSUMABLES_GEAR_MANAGED_BY"] = "Currently managed by: |cff00ff88%s|r"
+    L["CONSUMABLES_GEAR_HINT"] = "|cffffcc00Click:|r Open conflict manager (DistractionQoL vs EllesmereUI)."
+    L["CONSUMABLES_MSG_CTRL_STATUS"] = "Active controller: |cff00ff88%s|r. Type |cffffcc00/consumables choose|r or click |cffffcc00[⚙]|r to switch."
+    L["CONSUMABLES_CMD_DESC"] = "Opens interactive consumables HUD and feature controller."
+    L["CONFLICTS_CMD_DESC"] = "Opens manager choice dialog (DistractionQoL vs EllesmereUI)."
 end
 
 -- Fallback metatable: missing keys return the key itself

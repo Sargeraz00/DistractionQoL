@@ -121,10 +121,24 @@ local function InitDefaultCommands()
         end
     end, "Simula y prueba la ventana de Asesor de Botín Comerciable.", "Simulates and tests the Tradeable Loot Advisor popup.", 50)
 
-    -- 6. Check Consumables
-    DQ:RegisterCommand({ "check", "buffs", "consumables" }, function()
-        if DQ.RaidFlow and DQ.RaidFlow.CheckConsumables then DQ.RaidFlow:CheckConsumables(true) end
-    end, "Revisa si te faltan consumibles (Comida, Frasco, Runas, Arma).", "Checks missing consumables (Food, Flask, Rune, Weapon oil).", 60)
+    -- 6. Check Consumables & Interactive Manager
+    DQ:RegisterCommand({ "check", "buffs", "consumables", "consumibles", "consumible", "frascos" }, function(arg)
+        if DQ.ConsumablesBar and DQ.ConsumablesBar.OpenManager then
+            local forcePrompt = (arg == "choose" or arg == "setup" or arg == "prompt" or arg == "conflict" or arg == "cambiar")
+            DQ.ConsumablesBar:OpenManager(forcePrompt)
+        elseif DQ.RaidFlow and DQ.RaidFlow.CheckConsumables then
+            DQ.RaidFlow:CheckConsumables(true)
+        end
+    end, "Abre el gestor de consumibles interactivo y selector de control.", "Opens interactive consumables HUD and feature controller.", 60)
+
+    -- 7. Consumables Conflict Resolver
+    DQ:RegisterCommand({ "conflict", "conflicts", "compat", "compatibility" }, function()
+        if DQ.ConsumablesBar and DQ.ConsumablesBar.OpenManager then
+            DQ.ConsumablesBar:OpenManager(true)
+        elseif DQ.RaidFlow and DQ.RaidFlow.CheckRaidConsumablesConflict then
+            DQ.RaidFlow:CheckRaidConsumablesConflict(true)
+        end
+    end, "Abre el diálogo de elección de gestor (DistractionQoL vs EllesmereUI).", "Opens manager choice dialog (DistractionQoL vs EllesmereUI).", 65)
 
     -- 7. FPS Optimizer
     DQ:RegisterCommand("fps", function(arg)

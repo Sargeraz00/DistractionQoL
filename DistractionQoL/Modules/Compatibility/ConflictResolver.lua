@@ -110,6 +110,41 @@ local CONFLICT_DEFINITIONS = {
             return nil
         end,
     },
+    consumables = {
+        name = "Gestor de Consumibles y Frascos",
+        nameEn = "Consumables & Flask Manager",
+        icon = "Interface\\Icons\\inv_potion_105",
+        superiority = {
+            es = "• |cffffffffRotación en tiempo real (Scroll):|r Rueda del ratón sobre el botón para alternar frascos o comidas para multi-spec o rangos menores en llaves bajas.\n• |cffffffffCatálogo estricto de Midnight (12.x):|r Solo frascos y comidas de Midnight (Sol Devastado, Runa Tocada por el Vacío), sin mezclar expansiones obsoletas.\n• |cffffffffArmas seguras en 1 clic:|r Aplica aceites/piedras a Mano Principal (Izq) y Mano Secundaria (Der) sin abrir bolsas.",
+            en = "• |cffffffffReal-time Scroll Cycling:|r Mouse wheel on hover to cycle flasks/food for off-specs or lower ranks.\n• |cffffffffStrict Midnight Catalog:|r Only active 12.x items (Shattered Sun, Void-Touched Rune), zero clutter from old expansions.\n• |cffffffff1-Click Smart Weapons:|r Single-click to enchant Main Hand (Left) or Off-Hand (Right) without bag targeting."
+        },
+        detectConflict = function()
+            -- 1. EllesmereUI check (detects AuraBuffReminders, QoL, and core modules)
+            if C_AddOns then
+                if C_AddOns.IsAddOnLoaded("EllesmereUIAuraBuffReminders") or
+                   C_AddOns.IsAddOnLoaded("EllesmereUIQoL") or
+                   C_AddOns.IsAddOnLoaded("EllesmereUI") or
+                   C_AddOns.IsAddOnLoaded("EllesmereUIForeverEssentials") then
+                    return "EllesmereUI"
+                end
+            end
+            if _G["EllesmereUIAuraBuffRemindersDB"] or _G["EllesmereUI"] or _G["EllesmereUIDB"] then
+                return "EllesmereUI"
+            end
+            -- 2. ElvUI check
+            if _G["ElvUI"] then
+                return "ElvUI"
+            end
+            -- 3. Fallback: check if Ellesmere is installed
+            if C_AddOns and C_AddOns.DoesAddOnExist and (
+                C_AddOns.DoesAddOnExist("EllesmereUIAuraBuffReminders") or
+                C_AddOns.DoesAddOnExist("EllesmereUI")
+            ) then
+                return "EllesmereUI"
+            end
+            return nil
+        end,
+    },
 }
 
 DQ.ConflictResolver.DEFINITIONS = CONFLICT_DEFINITIONS
@@ -255,6 +290,63 @@ function DQ.ConflictResolver:ApplyHandover(featureKey, choice, extAddon)
         if DQ.BagSort and DQ.BagSort.UpdateBagButtonVisibility then
             DQ.BagSort:UpdateBagButtonVisibility()
         end
+
+    elseif featureKey == "consumables" then
+        if choice == "DistractionQoL" then
+            DQ.Config:Set("raidFlow", "checkConsumables", true)
+            if extAddon == "EllesmereUI" then
+                if _G["EllesmereUIDB"] then
+                    _G["EllesmereUIDB"].consumables = false
+                    _G["EllesmereUIDB"].readyCheckConsumables = false
+                end
+                if _G["EABR_Anchor"] then
+                    _G["EABR_Anchor"]:SetAlpha(0)
+                    if not InCombatLockdown() then _G["EABR_Anchor"]:Hide() end
+                end
+                if _G["EABR_CombatAnchor"] then
+                    _G["EABR_CombatAnchor"]:SetAlpha(0)
+                    if not InCombatLockdown() then _G["EABR_CombatAnchor"]:Hide() end
+                end
+            end
+        elseif choice == "External" then
+            DQ.Config:Set("raidFlow", "checkConsumables", false)
+            if DQ.ConsumablesBar and DQ.ConsumablesBar.HideBar then
+                DQ.ConsumablesBar:HideBar()
+            end
+            if extAddon == "EllesmereUI" then
+                if _G["EllesmereUIDB"] then
+                    _G["EllesmereUIDB"].consumables = true
+                    _G["EllesmereUIDB"].readyCheckConsumables = true
+                end
+                if _G["EABR_Anchor"] then
+                    _G["EABR_Anchor"]:SetAlpha(1)
+                    if not InCombatLockdown() then _G["EABR_Anchor"]:Show() end
+                end
+                if _G["EABR_CombatAnchor"] then
+                    _G["EABR_CombatAnchor"]:SetAlpha(1)
+                    if not InCombatLockdown() then _G["EABR_CombatAnchor"]:Show() end
+                end
+            end
+        elseif choice == "Disabled" then
+            DQ.Config:Set("raidFlow", "checkConsumables", false)
+            if DQ.ConsumablesBar and DQ.ConsumablesBar.HideBar then
+                DQ.ConsumablesBar:HideBar()
+            end
+            if extAddon == "EllesmereUI" then
+                if _G["EllesmereUIDB"] then
+                    _G["EllesmereUIDB"].consumables = false
+                    _G["EllesmereUIDB"].readyCheckConsumables = false
+                end
+                if _G["EABR_Anchor"] then
+                    _G["EABR_Anchor"]:SetAlpha(0)
+                    if not InCombatLockdown() then _G["EABR_Anchor"]:Hide() end
+                end
+                if _G["EABR_CombatAnchor"] then
+                    _G["EABR_CombatAnchor"]:SetAlpha(0)
+                    if not InCombatLockdown() then _G["EABR_CombatAnchor"]:Hide() end
+                end
+            end
+        end
     end
 end
 
@@ -381,9 +473,36 @@ local function CreateConflictDialog()
     descText:SetText("Se ha detectado que EllesmereUI también tiene activa esta misma función.\n¿Qué addon deseas que gestione esta acción a partir de ahora?")
     f.descText = descText
 
+    -- Superiority highlight box container
+    local supBox = CreateFrame("Frame", nil, f, "BackdropTemplate")
+    supBox:SetPoint("TOPLEFT", descText, "BOTTOMLEFT", 0, -8)
+    supBox:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -18, 86)
+    supBox:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8x8",
+        edgeFile = "Interface\\Buttons\\WHITE8x8",
+        edgeSize = 1,
+        insets = { left = 1, right = 1, top = 1, bottom = 1 },
+    })
+    supBox:SetBackdropColor(0.04, 0.04, 0.07, 0.95)
+    supBox:SetBackdropBorderColor(0.0, 0.85, 1.0, 0.40)
+    f.supBox = supBox
+
+    local supTitle = supBox:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    supTitle:SetPoint("TOPLEFT", supBox, "TOPLEFT", 10, -8)
+    supTitle:SetText("|cff00e5ff¿Por qué DistractionQoL es superior?|r")
+    f.supTitle = supTitle
+
+    local supText = supBox:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    supText:SetPoint("TOPLEFT", supTitle, "BOTTOMLEFT", 0, -4)
+    supText:SetPoint("BOTTOMRIGHT", supBox, "BOTTOMRIGHT", -8, 6)
+    supText:SetJustifyH("LEFT")
+    supText:SetJustifyV("TOP")
+    supText:SetWordWrap(true)
+    f.supText = supText
+
     -- Checkbox: Don't ask again
     local cbDontAsk = CreateFrame("CheckButton", "DQConflictDontAskCB", f, "UICheckButtonTemplate")
-    cbDontAsk:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 18, 56)
+    cbDontAsk:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 18, 54)
     cbDontAsk:SetSize(20, 20)
     cbDontAsk:SetChecked(true)
 
@@ -399,7 +518,7 @@ local function CreateConflictDialog()
     -- Helper to create modern flat choice buttons
     local function CreateChoiceButton(parent, text, r, g, b)
         local btn = CreateFrame("Button", nil, parent, "BackdropTemplate")
-        btn:SetSize(205, 30)
+        btn:SetSize(220, 30)
         btn:SetBackdrop({
             bgFile = "Interface\\Buttons\\WHITE8x8",
             edgeFile = "Interface\\Buttons\\WHITE8x8",
@@ -486,23 +605,44 @@ function DQ.ConflictResolver:ProcessNextDialog()
     if isSpanish then
         f.title:SetText("|cff00e5ffDistractionQoL|r - |cffffffffConflicto Detectado|r")
         f.descText:SetText(string.format("Se detectó que |cffffcc00%s|r también tiene habilitada la función de |cffffffff%s|r.\n¿Qué addon prefieres que realice esta acción?", extName, featName))
-        f.btnDQ.text:SetText("Usar DistractionQoL")
         f.btnExt.text:SetText("Usar " .. extName)
         f.cbDontAsk.text:SetText("Recordar mi elección (No volver a preguntar)")
     else
         f.title:SetText("|cff00e5ffDistractionQoL|r - |cffffffffFeature Conflict Detected|r")
         f.descText:SetText(string.format("|cffffcc00%s|r also has |cffffffff%s|r enabled.\nWhich addon would you prefer to handle this action?", extName, featName))
-        f.btnDQ.text:SetText("Use DistractionQoL")
         f.btnExt.text:SetText("Use " .. extName)
         f.cbDontAsk.text:SetText("Remember my choice (Don't ask again)")
+    end
+
+    -- Superiority highlight box setup
+    if def.superiority then
+        f:SetSize(490, 315)
+        f.supBox:Show()
+        local supContent = isSpanish and (def.superiority.es or "") or (def.superiority.en or "")
+        f.supText:SetText(supContent)
+        f.supTitle:SetText(isSpanish and "|cff00e5ff¿Por qué DistractionQoL es superior?|r" or "|cff00e5ffWhy DistractionQoL is superior:|r")
+        f.btnDQ.text:SetText(isSpanish and "Usar DistractionQoL (Recomendado)" or "Use DistractionQoL (Recommended)")
+    else
+        f:SetSize(460, 230)
+        f.supBox:Hide()
+        f.btnDQ.text:SetText(isSpanish and "Usar DistractionQoL" or "Use DistractionQoL")
     end
 
     f.cbDontAsk:SetChecked(true)
     f:Show()
 end
 
--- Queues a conflict prompt request
+-- Queues a conflict prompt request (deduped)
 function DQ.ConflictResolver:QueuePrompt(featureKey, externalAddon, callback)
+    if currentRequest and currentRequest.featureKey == featureKey then
+        return
+    end
+    for _, item in ipairs(dialogQueue) do
+        if item.featureKey == featureKey then
+            return
+        end
+    end
+
     table.insert(dialogQueue, {
         featureKey = featureKey,
         externalAddon = externalAddon,

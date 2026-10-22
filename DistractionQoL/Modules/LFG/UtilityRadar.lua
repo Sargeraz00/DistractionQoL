@@ -140,6 +140,7 @@ local function OnSearchEntryUpdate(entry)
     if not cfg or cfg.enabled == false or cfg.showEntryBadges == false then
         if entry._dqRadarText then
             entry._dqRadarText:SetText("")
+            entry._dqRadarText:Hide()
         end
         return
     end
@@ -148,6 +149,7 @@ local function OnSearchEntryUpdate(entry)
     if not analysis then
         if entry._dqRadarText then
             entry._dqRadarText:SetText("")
+            entry._dqRadarText:Hide()
         end
         return
     end
@@ -155,9 +157,17 @@ local function OnSearchEntryUpdate(entry)
     -- Create or reuse overlay FontString on entry
     if not entry._dqRadarText then
         local fs = entry:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        fs:SetPoint("RIGHT", entry, "RIGHT", -12, 0)
         entry._dqRadarText = fs
     end
+
+    local fs = entry._dqRadarText
+    fs:ClearAllPoints()
+    if entry.DataDisplay then
+        fs:SetPoint("RIGHT", entry.DataDisplay, "LEFT", -6, 0)
+    else
+        fs:SetPoint("RIGHT", entry, "RIGHT", -105, 0)
+    end
+    fs:SetJustifyH("RIGHT")
 
     local blBadge = analysis.hasLust and "|cff00ff88BL|r" or "|cffff4444BL|r"
     local crBadge = analysis.hasBrez and "|cff00ff88CR|r" or "|cffff4444CR|r"
@@ -168,7 +178,8 @@ local function OnSearchEntryUpdate(entry)
         badgeStr = "|cffffd100★|r " .. badgeStr
     end
 
-    entry._dqRadarText:SetText(badgeStr)
+    fs:SetText(badgeStr)
+    fs:Show()
 end
 
 function DQ.UtilityRadar:Init()

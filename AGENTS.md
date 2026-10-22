@@ -42,6 +42,13 @@
 - Todo comando slash debe registrarse mediante `DQ.Commands:Register(cmd, desc, handlerFn, aliases)`.
 - `Core.lua` permanece inmutable y como un cableado mínimo de arranque.
 
+## Localización Rigurosa Obligatoria (esES / esMX y resto enUS)
+- **PROHIBIDO mezclar idiomas en una misma vista, botón, mensaje o descripción** (ej. "Comida (Well Fed)" o mezclar botones en español con tooltips o textos en inglés).
+- **SIEMPRE verificar que toda nueva feature, frame, opción o mensaje de chat esté 100% localizado** para los idiomas soportados:
+  - `esES` y `esMX`: Español completo, natural y gramaticalmente correcto.
+  - `enUS` (y fallback universal para cualquier otro cliente): Inglés completo, limpio y preciso.
+- **PROHIBIDO hardcodear cadenas de texto visibles al usuario inline.** Todo texto debe registrarse y consumirse a través del diccionario centralizado `Core/Locales.lua` (`DQ.L`).
+
 ## Garantía de Calidad Offline Pre-Commit (Tests + Sintaxis)
 - Antes de dar por concluida cualquier sesión o solicitar confirmación para commit, se DEBE ejecutar obligatoriamente:
   1. La suite de pruebas unitarias offline (`lua tests/run_tests.lua`), debiendo aprobar el 100% de los tests.

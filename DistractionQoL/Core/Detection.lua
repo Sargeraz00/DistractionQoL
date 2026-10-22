@@ -213,7 +213,7 @@ function DQ.Detection:CheckPlayerConsumables()
             end
 
             -- 3. Augment Rune
-            if lowerName:find("rune") or lowerName:find("runa") or lowerName:find("augment") or lowerName:find("aumento") then
+            if lowerName:find("rune") or lowerName:find("runa") or lowerName:find("augment") or lowerName:find("aumento") or lowerName:find("void%-touched") or lowerName:find("vac[íi]o") then
                 hasRune = true
             end
 
@@ -234,20 +234,27 @@ function DQ.Detection:CheckPlayerConsumables()
     end
 
     local missing = {}
+    local missingKeys = {}
     local L = DQ.L or {}
-    if not hasFood then table.insert(missing, L["FOOD_BUFF"] or "Comida (Well Fed)") end
-    if not hasFlask then table.insert(missing, L["FLASK_BUFF"] or "Frasco / Phial") end
-    if not hasWeaponEnchant then table.insert(missing, L["WEAPON_BUFF"] or "Aceite/Piedra de Arma") end
-    -- Note: Rune is typically optional in normal/heroic, but tracked for mythic
-    if not hasRune and IsInRaid and IsInRaid() then
-        -- Only flag rune in mythic raid
-        local _, _, diffID = GetInstanceInfo()
-        if diffID == 16 then
-            table.insert(missing, L["RUNE_BUFF"] or "Runa de Aumento")
-        end
+    if not hasFood then
+        table.insert(missing, L["FOOD_BUFF"])
+        missingKeys["FOOD"] = true
+    end
+    if not hasFlask then
+        table.insert(missing, L["FLASK_BUFF"])
+        missingKeys["FLASK"] = true
+    end
+    if not hasWeaponEnchant then
+        table.insert(missing, L["WEAPON_BUFF"])
+        missingKeys["WEAPON"] = true
+    end
+    -- Augment Rune check
+    if not hasRune then
+        missingKeys["RUNE"] = true
+        table.insert(missing, L["RUNE_BUFF"])
     end
 
-    return missing
+    return missing, missingKeys
 end
 
 -- Checks for consumables that are about to expire (e.g. less than thresholdSeconds remaining)

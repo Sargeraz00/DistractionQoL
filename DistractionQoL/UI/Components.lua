@@ -46,13 +46,21 @@ function DQ.UI:CreateWindow(frameName, titleText, width, height)
         DQ.Theme.ApplyWindowStyle(f)
     else
         f:SetBackdrop({
-            bgFile = "Interface\\Buttons\\WHITE8x8",
+            bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
             edgeFile = "Interface\\Buttons\\WHITE8x8",
+            tile = false,
+            tileSize = 0,
             edgeSize = 1,
             insets = { left = 1, right = 1, top = 1, bottom = 1 },
         })
-        f:SetBackdropColor(0.06, 0.06, 0.08, 0.96)
+        f:SetBackdropColor(0.06, 0.06, 0.08, 0.98)
         f:SetBackdropBorderColor(0.22, 0.22, 0.26, 1)
+
+        local bg = f:CreateTexture(nil, "BACKGROUND", nil, -8)
+        bg:SetPoint("TOPLEFT", f, "TOPLEFT", 1, -1)
+        bg:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -1, 1)
+        bg:SetColorTexture(0.06, 0.06, 0.08, 0.98)
+        f._dqSolidBg = bg
     end
 
     -- Header background bar
@@ -106,7 +114,7 @@ function DQ.UI:CreateWindow(frameName, titleText, width, height)
 end
 
 -- Helper to create CheckButtons using standard WoW template with clean positioning
-function DQ.UI:CreateCheckbox(parent, label, x, y, initialChecked, onClick)
+function DQ.UI:CreateCheckbox(parent, label, x, y, initialChecked, onClick, maxTextWidth)
     local cb = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate")
     cb:SetPoint("TOPLEFT", parent, "TOPLEFT", x, y)
     cb:SetSize(22, 22)
@@ -117,6 +125,13 @@ function DQ.UI:CreateCheckbox(parent, label, x, y, initialChecked, onClick)
         text = cb:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
         text:SetPoint("LEFT", cb, "RIGHT", 6, 0)
         cb.text = text
+    end
+    text:SetWordWrap(true)
+    text:SetJustifyH("LEFT")
+    if maxTextWidth then
+        text:SetWidth(maxTextWidth)
+    else
+        text:SetPoint("RIGHT", parent, "RIGHT", -10, 0)
     end
     text:SetText(label)
 

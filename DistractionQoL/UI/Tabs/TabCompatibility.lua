@@ -63,7 +63,7 @@ function DQ.UI:BuildTabCompatibility(parentFrame, pConflicts)
     end
 
     local conflictRows = {}
-    local featureOrder = { "autoRepair", "autoSellJunk", "fastLoot", "autoSkipCinematics", "bagSort" }
+    local featureOrder = { "autoRepair", "autoSellJunk", "fastLoot", "autoSkipCinematics", "bagSort", "consumables" }
 
     local function RefreshConflictRows()
         if not DQ.ConflictResolver then return end
@@ -124,8 +124,8 @@ function DQ.UI:BuildTabCompatibility(parentFrame, pConflicts)
         end
     end
 
-    local rowStartY = -64
-    local rowHeight = 52
+    local rowStartY = -60
+    local rowHeight = 48
 
     for i, key in ipairs(featureOrder) do
         local def = (DQ.ConflictResolver and DQ.ConflictResolver.DEFINITIONS and DQ.ConflictResolver.DEFINITIONS[key]) or {}
@@ -136,19 +136,19 @@ function DQ.UI:BuildTabCompatibility(parentFrame, pConflicts)
 
         local rowBg = pConflicts:CreateTexture(nil, "BACKGROUND")
         rowBg:SetPoint("TOPLEFT", pConflicts, "TOPLEFT", 0, rowY)
-        rowBg:SetPoint("BOTTOMRIGHT", pConflicts, "TOPRIGHT", 0, rowY - 46)
+        rowBg:SetPoint("BOTTOMRIGHT", pConflicts, "TOPRIGHT", 0, rowY - 42)
         rowBg:SetColorTexture(0.10, 0.10, 0.14, 0.45)
 
         local icon = pConflicts:CreateTexture(nil, "ARTWORK")
         icon:SetSize(28, 28)
-        icon:SetPoint("LEFT", pConflicts, "TOPLEFT", 8, rowY - 23)
+        icon:SetPoint("LEFT", pConflicts, "TOPLEFT", 8, rowY - 21)
         icon:SetTexture(def.icon or "Interface\\Icons\\INV_Misc_QuestionMark")
 
         local btnExt = self:CreateChoiceButton(pConflicts, 112, 24, "External")
-        btnExt:SetPoint("RIGHT", pConflicts, "TOPRIGHT", -8, rowY - 23)
+        btnExt:SetPoint("RIGHT", pConflicts, "TOPRIGHT", -8, rowY - 21)
 
         local btnDQ = self:CreateChoiceButton(pConflicts, 112, 24, "DistractionQoL")
-        btnDQ:SetPoint("RIGHT", pConflicts, "TOPRIGHT", -124, rowY - 23)
+        btnDQ:SetPoint("RIGHT", pConflicts, "TOPRIGHT", -124, rowY - 21)
 
         local lblName = pConflicts:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         lblName:SetPoint("TOPLEFT", icon, "TOPRIGHT", 8, 3)

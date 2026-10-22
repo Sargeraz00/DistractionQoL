@@ -3,6 +3,7 @@
 -- Displays how many party/raid members are currently targeting the hovered NPC/mob
 -- Fast, event-driven, zero polling, zero continuous OnUpdate
 -- Uses modern TooltipDataProcessor API (WoW 11.x / 12.1+ Midnight)
+-- Fully shielded against Midnight 12.x Secret Values
 
 local addonName, DQ = ...
 
@@ -14,9 +15,38 @@ local COLOR_HEALER = "|cff00ff88" -- Mint Green
 local COLOR_DPS    = "|cffff5555" -- Red / Coral
 local COLOR_RESET  = "|r"
 
+-- Helper to safely check secret values in Midnight 12.x
+local function IsSecret(val)
+    return issecretvalue and issecretvalue(val)
+end
+
+-- Safe wrappers for WoW unit APIs to prevent secret value execution taint errors
+local function SafeUnitExists(unit)
+    if not unit or IsSecret(unit) then return false end
+    local ok, exists = pcall(UnitExists, unit)
+    return ok and exists
+end
+
+local function SafeUnitIsPlayer(unit)
+    if not unit or IsSecret(unit) then return false end
+    local ok, isPlayer = pcall(UnitIsPlayer, unit)
+    return ok and isPlayer
+end
+
+local function SafeUnitGUID(unit)
+    if not unit or IsSecret(unit) then return nil end
+    local ok, guid = pcall(UnitGUID, unit)
+    if ok and guid and not IsSecret(guid) then
+        return guid
+    end
+    return nil
+end
+
 -- Scans group members targeting the specified mob GUID
 local function GetTargetingGroupMembers(mobGUID)
-    if not mobGUID or not IsInGroup or not IsInGroup() then return 0, 0, 0, 0 end
+    if not mobGUID or IsSecret(mobGUID) or not IsInGroup or not IsInGroup() then
+        return 0, 0, 0, 0
+    end
 
     local tankCount = 0
     local healerCount = 0
@@ -28,7 +58,8 @@ local function GetTargetingGroupMembers(mobGUID)
 
     -- In party, check player explicitly
     if not isRaid then
-        if UnitGUID("playertarget") == mobGUID then
+        local pTargetGUID = SafeUnitGUID("playertarget")
+        if pTargetGUID and pTargetGUID == mobGUID then
             local role = (UnitGroupRolesAssigned and UnitGroupRolesAssigned("player")) or "NONE"
             if role == "TANK" then
                 tankCount = tankCount + 1
@@ -42,16 +73,19 @@ local function GetTargetingGroupMembers(mobGUID)
 
     for i = 1, count do
         local unit = prefix .. i
-        if UnitExists(unit) then
+        if SafeUnitExists(unit) then
             local targetUnit = unit .. "target"
-            if UnitExists(targetUnit) and UnitGUID(targetUnit) == mobGUID then
-                local role = (UnitGroupRolesAssigned and UnitGroupRolesAssigned(unit)) or "NONE"
-                if role == "TANK" then
-                    tankCount = tankCount + 1
-                elseif role == "HEALER" then
-                    healerCount = healerCount + 1
-                else
-                    dpsCount = dpsCount + 1
+            if SafeUnitExists(targetUnit) then
+                local tg = SafeUnitGUID(targetUnit)
+                if tg and tg == mobGUID then
+                    local role = (UnitGroupRolesAssigned and UnitGroupRolesAssigned(unit)) or "NONE"
+                    if role == "TANK" then
+                        tankCount = tankCount + 1
+                    elseif role == "HEALER" then
+                        healerCount = healerCount + 1
+                    else
+                        dpsCount = dpsCount + 1
+                    end
                 end
             end
         end
@@ -67,15 +101,18 @@ local function OnTooltipSetUnit(tooltip, data)
 
     if not IsInGroup or not IsInGroup() then return end
 
+    -- Guard against secret values in data in Midnight 12.x
+    if data and data.guid and IsSecret(data.guid) then return end
+
     -- Extract unit from tooltip
     local _, unit = tooltip:GetUnit()
-    if not unit or not UnitExists(unit) then return end
+    if not unit or IsSecret(unit) or not SafeUnitExists(unit) then return end
 
     -- Only show on NPCs/enemies (skip player characters)
-    if UnitIsPlayer(unit) then return end
+    if SafeUnitIsPlayer(unit) then return end
 
-    local mobGUID = UnitGUID(unit)
-    if not mobGUID then return end
+    local mobGUID = SafeUnitGUID(unit)
+    if not mobGUID or IsSecret(mobGUID) then return end
 
     local total, tanks, healers, dps = GetTargetingGroupMembers(mobGUID)
     if total > 0 then

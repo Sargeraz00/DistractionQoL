@@ -96,8 +96,22 @@ function DQ.WipeRelease:Init()
         if event == "PLAYER_DEAD" or event == "ENCOUNTER_END" then
             DQ.WipeRelease:CheckWipeStatus()
         elseif event == "UNIT_DIED" then
-            if arg1 and (arg1:find("party") or arg1 == "player") then
-                DQ.WipeRelease:CheckWipeStatus()
+            -- Full wipe evaluation is only relevant if the player is currently dead or ghost
+            if UnitIsDeadOrGhost and UnitIsDeadOrGhost("player") then
+                local isRelevant = false
+                if issecretvalue and issecretvalue(arg1) then
+                    -- In Midnight 12.x, arg1 is a secret string in instances.
+                    -- Since player is already dead, evaluate wipe status safely without indexing secret values.
+                    isRelevant = true
+                elseif type(arg1) == "string" then
+                    isRelevant = (string.find(arg1, "party") ~= nil) or (arg1 == "player")
+                else
+                    isRelevant = true
+                end
+
+                if isRelevant then
+                    DQ.WipeRelease:CheckWipeStatus()
+                end
             end
         elseif event == "PLAYER_ALIVE" or event == "PLAYER_UNGHOST" then
             DQ.WipeRelease.isFullWipeActive = false

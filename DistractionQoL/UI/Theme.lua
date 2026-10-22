@@ -8,8 +8,10 @@ DQ.Theme = DQ.Theme or {}
 
 -- Standard 1px Flat Border Backdrop definition
 DQ.Theme.Backdrop1px = {
-    bgFile = "Interface\\Buttons\\WHITE8x8",
+    bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
     edgeFile = "Interface\\Buttons\\WHITE8x8",
+    tile = false,
+    tileSize = 0,
     edgeSize = 1,
     insets = { left = 1, right = 1, top = 1, bottom = 1 },
 }
@@ -67,6 +69,17 @@ function DQ.Theme.ApplyWindowStyle(frame)
     local c = DQ.Theme.Colors
     frame:SetBackdropColor(unpack(c.bgWindow))
     frame:SetBackdropBorderColor(unpack(c.borderCard))
+
+    -- Bulletproof solid background texture to guarantee opacity across all client configs
+    if not frame._dqSolidBg then
+        local bg = frame:CreateTexture(nil, "BACKGROUND", nil, -8)
+        bg:SetPoint("TOPLEFT", frame, "TOPLEFT", 1, -1)
+        bg:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -1, 1)
+        bg:SetColorTexture(unpack(c.bgWindow))
+        frame._dqSolidBg = bg
+    else
+        frame._dqSolidBg:SetColorTexture(unpack(c.bgWindow))
+    end
 end
 
 -- Applies flat card/row backdrop
@@ -76,6 +89,16 @@ function DQ.Theme.ApplyCardStyle(frame, alt)
     local bg = alt and c.bgCardAlt or c.bgCard
     frame:SetBackdropColor(unpack(bg))
     frame:SetBackdropBorderColor(unpack(c.borderSubtle))
+
+    if not frame._dqSolidBg then
+        local solid = frame:CreateTexture(nil, "BACKGROUND", nil, -8)
+        solid:SetPoint("TOPLEFT", frame, "TOPLEFT", 1, -1)
+        solid:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -1, 1)
+        solid:SetColorTexture(unpack(bg))
+        frame._dqSolidBg = solid
+    else
+        frame._dqSolidBg:SetColorTexture(unpack(bg))
+    end
 end
 
 -- Applies standard flat button backdrop
