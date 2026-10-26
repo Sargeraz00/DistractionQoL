@@ -84,14 +84,15 @@ mainText:SetPoint("CENTER", alertFrame, "CENTER", 0, 24)
 mainText:SetTextColor(1, 0.2, 0.2, 1) -- Bright Red
 mainText:SetShadowColor(0, 0, 0, 1)
 mainText:SetShadowOffset(3, -3)
-mainText:SetText("¡BURRO, SONSO, NO LIBERES!")
+local initL = DQ.L or {}
+mainText:SetText(initL["ALERT_TITLE"] or "¡BURRO, SONSO, NO LIBERES!")
 
 -- Instructional subtext
 local subText = alertFrame:CreateFontString(nil, "OVERLAY")
 subText:SetFont(GetSubFont(), 18, "OUTLINE")
 subText:SetPoint("BOTTOM", alertFrame, "BOTTOM", 0, 22)
 subText:SetTextColor(1, 0.85, 0.2, 1) -- Bright Yellow / Gold
-subText:SetText("¡Mantén presionado SHIFT y haz clic para liberar! (Hold SHIFT to release)")
+subText:SetText(initL["ALERT_SUBTEXT"] or "¡Mantén presionado SHIFT y haz clic para liberar!")
 
 -- Auto-hide timer
 local timer = 0
@@ -149,6 +150,8 @@ local SOUND_PRESETS = {
 
 DQ.Alert.SOUND_PRESETS = SOUND_PRESETS
 
+local AUDIO_CHANNELS = { "Master", "Dialog", "SFX" }
+
 function DQ.Alert:PlaySound(overrideChoice)
     local soundEnabled = DQ.Config:Get("releaseGuard", "soundEnabled")
     if soundEnabled == nil then
@@ -172,9 +175,8 @@ function DQ.Alert:PlaySound(overrideChoice)
             if ok and willPlay then return true end
         end
     elseif preset.type == "file" then
-        local channels = { "Master", "Dialog", "SFX" }
         for _, path in ipairs(preset.paths) do
-            for _, channel in ipairs(channels) do
+            for _, channel in ipairs(AUDIO_CHANNELS) do
                 local ok, willPlay = pcall(PlaySoundFile, path, channel)
                 if ok and willPlay then return true end
             end

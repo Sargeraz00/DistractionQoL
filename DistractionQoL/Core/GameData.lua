@@ -40,7 +40,7 @@ local CLASS_WEAPONS = {
     ["MONK"]        = { [0]=true, [4]=true, [6]=true, [7]=true, [10]=true, [13]=true },
     ["DRUID"]       = { [4]=true, [5]=true, [6]=true, [10]=true, [13]=true, [15]=true },
     ["DEMONHUNTER"] = { [0]=true, [7]=true, [9]=true, [13]=true },
-    ["EVOKER"]      = { [0]=true, [4]=true, [7]=true, [10]=true, [13]=true, [15]=true },
+    ["EVOKER"]      = { [0]=true, [1]=true, [4]=true, [5]=true, [6]=true, [7]=true, [8]=true, [10]=true, [13]=true, [15]=true },
 }
 
 -- Slot mapping for equipped item comparison

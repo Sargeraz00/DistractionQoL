@@ -424,7 +424,9 @@ function DQ.CommandHub:AnnouncePartyKeys()
         local header = L["HUB_KEYS_ANNOUNCE_HDR"] or "DistractionQoL — Llaves del Grupo:"
         local msg = header .. " " .. table.concat(entries, " | ")
         local channel = IsInRaid() and "RAID" or "PARTY"
-        SendChatMessage(msg, channel)
+        if SendChatMessage then
+            pcall(SendChatMessage, msg, channel)
+        end
     end
 end
 

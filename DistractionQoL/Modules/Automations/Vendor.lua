@@ -56,6 +56,7 @@ end
 
 -- Sells all poor (grey) quality items in bags
 local function SellJunkItems()
+    if not MerchantFrame or not MerchantFrame:IsShown() then return end
     if not C_Container or not C_Container.GetContainerNumSlots then return end
     local L = DQ.L or {}
     local soldCount = 0

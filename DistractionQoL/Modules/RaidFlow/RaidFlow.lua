@@ -91,6 +91,7 @@ function DQ.RaidFlow:Init()
         -- 2. DBM / BIGWIGS PULL TIMER DETECTOR
         elseif event == "CHAT_MSG_ADDON" then
             if not DQ.Config:Get("raidFlow", "flashTaskbar") then return end
+            if issecretvalue and ((prefix and issecretvalue(prefix)) or (msg and issecretvalue(msg))) then return end
 
             if prefix == "D4" and msg and msg:find("PT") then
                 -- DBM pull timer format: PT\t<seconds>

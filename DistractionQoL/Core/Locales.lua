@@ -68,6 +68,7 @@ if isSpanish then
     L["CLEAN_LOADING_GC"] = "Limpieza de memoria en pantallas de carga (evita micro-tirones en combate)"
     L["BTN_FPS_SAVE"] = "Guardar Actual"
     L["BTN_FPS_OPT"] = "Optimizar FPS"
+    L["BTN_FPS_RESTORE"] = "Restaurar"
     -- Section 5: Compatibility & Conflicts
     L["SECTION_CONFLICTS_TITLE"] = "Resolución de Conflictos & Compatibilidad"
     L["SECTION_CONFLICTS_DESC"] = "Detecta funciones compartidas con EllesmereUI y ElvUI. Puedes definir qué addon controla cada función o restablecer los avisos emergentes."

@@ -418,7 +418,7 @@ function DQ.TradeAdvisor:Init()
             local sender = arg2
 
             -- Extract itemLink from message
-            local itemLink = message and message:match("(|c%x+|Hitem:[^|]+|h%[[^%]]+%]h|r)")
+            local itemLink = message and message:match("(|c%x+|Hitem:[^|]+|h%[[^%]]+%]|h|r)")
             if itemLink then
                 local looter = sender
                 if not looter or looter == "" then

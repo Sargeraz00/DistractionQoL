@@ -353,16 +353,19 @@ local function CreateBarFrame()
     RestorePosition(f)
     f:Hide()
 
-    -- Combat & Event Shielding
+    -- Combat & Event Shielding (PLAYER_REGEN_ENABLED is permanent; UNIT_AURA & BAG_UPDATE are dynamic)
     f:RegisterEvent("PLAYER_REGEN_ENABLED")
-    f:RegisterEvent("UNIT_AURA")
     f:SetScript("OnEvent", function(self, event, unit)
         if event == "PLAYER_REGEN_ENABLED" then
             if self._pendingHide then
                 self._pendingHide = nil
-                self:Hide()
+                DQ.ConsumablesBar:HideBar()
             elseif self._pendingUpdate then
                 self._pendingUpdate = nil
+                DQ.ConsumablesBar:Refresh()
+            end
+        elseif event == "BAG_UPDATE_DELAYED" then
+            if self:IsShown() and not InCombatLockdown() then
                 DQ.ConsumablesBar:Refresh()
             end
         elseif event == "UNIT_AURA" and unit == "player" then
@@ -427,6 +430,14 @@ function DQ.ConsumablesBar:ShowBar(missingKeys, isManual)
     end
     local frame = CreateBarFrame()
     frame._isManualPinned = isManual and true or false
+
+    if frame.RegisterUnitEvent then
+        frame:RegisterUnitEvent("UNIT_AURA", "player")
+    else
+        frame:RegisterEvent("UNIT_AURA")
+    end
+    frame:RegisterEvent("BAG_UPDATE_DELAYED")
+
     DQ.ConsumablesBar:Refresh(missingKeys)
     frame:Show()
 end
@@ -439,6 +450,8 @@ function DQ.ConsumablesBar:HideBar()
         return
     end
     barFrame._isManualPinned = false
+    barFrame:UnregisterEvent("UNIT_AURA")
+    barFrame:UnregisterEvent("BAG_UPDATE_DELAYED")
     barFrame:Hide()
 end
 

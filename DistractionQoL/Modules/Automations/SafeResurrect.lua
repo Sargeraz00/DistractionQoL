@@ -36,6 +36,12 @@ function DQ.SafeResurrect:Init()
 
                 -- 200ms delay to allow game engine dialog to settle safely
                 C_Timer.After(0.2, function()
+                    local currentlyInCombat = (DQ.Detection and DQ.Detection.IsCombatActive and DQ.Detection:IsCombatActive())
+                                           or (InCombatLockdown and InCombatLockdown())
+                    if currentlyInCombat and not allowCombat then
+                        return
+                    end
+
                     local ok, err = pcall(AcceptResurrect)
                     if ok then
                         if StaticPopup_Hide then

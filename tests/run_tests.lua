@@ -80,6 +80,11 @@ assertTrue(DQ.GameData:CanClassEquipItem("MAGE", Enum.ItemClass.Weapon, 19, "INV
 assertTrue(DQ.GameData:CanClassEquipItem("MAGE", Enum.ItemClass.Weapon, 10, "INVTYPE_2HWEAPON"), "Mage can equip Staff")
 assertFalse(DQ.GameData:CanClassEquipItem("MAGE", Enum.ItemClass.Weapon, 1, "INVTYPE_2HWEAPON"), "Mage cannot equip 2H Axe")
 
+assertTrue(DQ.GameData:CanClassEquipItem("EVOKER", Enum.ItemClass.Weapon, 8, "INVTYPE_2HWEAPON"), "Evoker can equip 2H Sword")
+assertTrue(DQ.GameData:CanClassEquipItem("EVOKER", Enum.ItemClass.Weapon, 5, "INVTYPE_2HWEAPON"), "Evoker can equip 2H Mace")
+assertTrue(DQ.GameData:CanClassEquipItem("EVOKER", Enum.ItemClass.Weapon, 1, "INVTYPE_2HWEAPON"), "Evoker can equip 2H Axe")
+assertTrue(DQ.GameData:CanClassEquipItem("EVOKER", Enum.ItemClass.Weapon, 6, "INVTYPE_2HWEAPON"), "Evoker can equip Polearm")
+
 -- Armor compatibility checks
 assertTrue(DQ.GameData:CanClassEquipItem("PALADIN", Enum.ItemClass.Armor, 4, "INVTYPE_CHEST"), "Paladin can equip Plate chest")
 assertFalse(DQ.GameData:CanClassEquipItem("PALADIN", Enum.ItemClass.Armor, 1, "INVTYPE_CHEST"), "Paladin cannot equip Cloth chest")
@@ -155,6 +160,11 @@ local eval4 = DQ.TradeAdvisorLogic.EvaluateDrop(drop4, "ROGUE", 0)
 assertTrue(eval4.isWearable, "Trinket is wearable by Rogue")
 assertTrue(eval4.isUpgrade, "Item in empty slot is recognized as an upgrade")
 assertEqual(eval4.ilvlDiff, 645, "ilvl differential matches full item level for empty slot")
+
+-- Test 5: Loot message hyperlink regex parsing
+local lootChatSample = "Has recibido botín: |cffa335ee|Hitem:221021::::::::70:268::11:1:3524:::|h[Coraza de Obsidiana del Vacío]|h|r."
+local parsedLink = lootChatSample:match("(|c%x+|Hitem:[^|]+|h%[[^%]]+%]|h|r)")
+assertEqual(parsedLink, "|cffa335ee|Hitem:221021::::::::70:268::11:1:3524:::|h[Coraza de Obsidiana del Vacío]|h|r", "Loot message regex successfully captures itemLink")
 
 -- ========================================================
 -- SUITE 3: UtilityRadarLogic (LFG Composition Analysis)
@@ -396,7 +406,8 @@ local requiredKeys = {
     "CONSUMABLES_CAT_FLASK", "CONSUMABLES_CAT_FOOD", "CONSUMABLES_CAT_RUNE", "CONSUMABLES_CAT_WEAPON",
     "CONSUMABLES_WHEEL_CYCLE", "CONSUMABLES_DISTINCT_COUNT", "CONSUMABLES_WEAPON_CLICK_HINT",
     "CONSUMABLES_NO_STOCK", "CONSUMABLES_NO_STOCK_DESC", "CONSUMABLES_GEAR_TITLE",
-    "CONSUMABLES_GEAR_MANAGED_BY", "CONSUMABLES_GEAR_HINT", "CONSUMABLES_MSG_CTRL_STATUS"
+    "CONSUMABLES_GEAR_MANAGED_BY", "CONSUMABLES_GEAR_HINT", "CONSUMABLES_MSG_CTRL_STATUS",
+    "BTN_FPS_RESTORE"
 }
 
 -- 7.1 Verify Spanish translations (default mock is esES)

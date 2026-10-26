@@ -101,7 +101,6 @@ local function DismissSimulation(dialogFrame)
     local target = GetDialogFrame(dialogFrame) or dialogFrame
     if target and target.Hide then
         target:Hide()
-        target.which = nil
     end
 
     -- Explicitly hide all StaticPopup instances showing death dialogs
@@ -109,7 +108,6 @@ local function DismissSimulation(dialogFrame)
         local f = _G["StaticPopup" .. i]
         if f and (f.which == "DEATH" or f.which == "DEATH_RELEASE") then
             f:Hide()
-            f.which = nil
         end
     end
 

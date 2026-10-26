@@ -128,8 +128,6 @@ local function OnSetSearchEntryTooltip(tooltip, resultID)
     if analysis.isRecommended then
         tooltip:AddLine("  " .. (L["LFG_RADAR_VERDICT_HIGH"] or "|cff00ff88★ ¡Alta probabilidad de invitación para tu clase!|r"))
     end
-
-    tooltip:Show()
 end
 
 -- Hook: Adds micro badges [BL] [CR] and recommendation highlights directly on list rows

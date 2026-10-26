@@ -42,6 +42,17 @@ local function SafeUnitGUID(unit)
     return nil
 end
 
+local UNIT_TOKENS = { party = {}, raid = {} }
+local TARGET_TOKENS = { party = {}, raid = {} }
+for i = 1, 40 do
+    UNIT_TOKENS.raid[i] = "raid" .. i
+    TARGET_TOKENS.raid[i] = "raid" .. i .. "target"
+end
+for i = 1, 4 do
+    UNIT_TOKENS.party[i] = "party" .. i
+    TARGET_TOKENS.party[i] = "party" .. i .. "target"
+end
+
 -- Scans group members targeting the specified mob GUID
 local function GetTargetingGroupMembers(mobGUID)
     if not mobGUID or IsSecret(mobGUID) or not IsInGroup or not IsInGroup() then
@@ -55,6 +66,8 @@ local function GetTargetingGroupMembers(mobGUID)
     local isRaid = IsInRaid and IsInRaid()
     local prefix = isRaid and "raid" or "party"
     local count = isRaid and (GetNumGroupMembers and GetNumGroupMembers() or 0) or (GetNumSubgroupMembers and GetNumSubgroupMembers() or 0)
+    local uList = UNIT_TOKENS[prefix]
+    local tList = TARGET_TOKENS[prefix]
 
     -- In party, check player explicitly
     if not isRaid then
@@ -72,9 +85,9 @@ local function GetTargetingGroupMembers(mobGUID)
     end
 
     for i = 1, count do
-        local unit = prefix .. i
+        local unit = (uList and uList[i]) or (prefix .. i)
         if SafeUnitExists(unit) then
-            local targetUnit = unit .. "target"
+            local targetUnit = (tList and tList[i]) or (unit .. "target")
             if SafeUnitExists(targetUnit) then
                 local tg = SafeUnitGUID(targetUnit)
                 if tg and tg == mobGUID then
@@ -134,7 +147,6 @@ local function OnTooltipSetUnit(tooltip, data)
         local line = string.format("|cff00e5ff%s|r |cffffffff%d|r |cff888888(%s)|r", label, total, detailStr)
 
         tooltip:AddLine(line)
-        tooltip:Show()
     end
 end
 
