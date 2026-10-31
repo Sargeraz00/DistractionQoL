@@ -10,16 +10,17 @@ DQ.UI = DQ.UI or {}
 
 local configFrame = nil
 
--- Builds the configuration panel frame with modern sidebar navigation
+-- Builds the configuration panel frame with modern Material Design 3 (M3) navigation
 function DQ.UI:CreatePanel()
     if configFrame then return configFrame end
 
     local L = DQ.L or {}
-    local versionStr = DQ.Util and DQ.Util.GetVersion and DQ.Util.GetVersion() or "4.0.0"
+    local versionStr = DQ.Util and DQ.Util.GetVersion and DQ.Util.GetVersion() or "4.2.3"
+    local m3 = (DQ.Theme and DQ.Theme.M3) or {}
 
-    -- Main Frame with modern flat obsidian backdrop (720x520)
+    -- Main Window with M3 Tonal Surface (740x530)
     local f = CreateFrame("Frame", "DistractionQoLConfigFrame", UIParent, "BackdropTemplate")
-    f:SetSize(720, 520)
+    f:SetSize(740, 530)
     f:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
     f:SetFrameStrata("DIALOG")
     f:SetMovable(true)
@@ -29,140 +30,121 @@ function DQ.UI:CreatePanel()
     f:SetScript("OnDragStop", f.StopMovingOrSizing)
     f:Hide()
 
-    -- Modern flat obsidian backdrop
     if DQ.Theme and DQ.Theme.ApplyWindowStyle then
         DQ.Theme.ApplyWindowStyle(f)
-    else
-        f:SetBackdrop({
-            bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
-            edgeFile = "Interface\\Buttons\\WHITE8x8",
-            tile = false,
-            tileSize = 0,
-            edgeSize = 1,
-            insets = { left = 1, right = 1, top = 1, bottom = 1 },
-        })
-        f:SetBackdropColor(0.06, 0.06, 0.08, 0.98)
-        f:SetBackdropBorderColor(0.22, 0.22, 0.26, 1)
-        local bg = f:CreateTexture(nil, "BACKGROUND", nil, -8)
-        bg:SetPoint("TOPLEFT", f, "TOPLEFT", 1, -1)
-        bg:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -1, 1)
-        bg:SetColorTexture(0.06, 0.06, 0.08, 0.98)
-        f._dqSolidBg = bg
     end
 
-    -- Header background bar (26px high)
-    local headerBar = f:CreateTexture(nil, "BACKGROUND", nil, -5)
-    headerBar:SetPoint("TOPLEFT", f, "TOPLEFT", 1, -1)
-    headerBar:SetPoint("TOPRIGHT", f, "TOPRIGHT", -1, -1)
-    headerBar:SetHeight(26)
-    headerBar:SetColorTexture(0, 0, 0, 0.50)
-    f.headerBar = headerBar
+    -- ==========================================================
+    -- M3 TOP APP BAR (Spacious 46px Header)
+    -- ==========================================================
+    local appBar = f:CreateTexture(nil, "BACKGROUND", nil, -5)
+    appBar:SetPoint("TOPLEFT", f, "TOPLEFT", 1, -1)
+    appBar:SetPoint("TOPRIGHT", f, "TOPRIGHT", -1, -1)
+    appBar:SetHeight(46)
+    appBar:SetColorTexture(unpack(m3.surfaceContainerLowest or { 0.06, 0.06, 0.08, 0.98 }))
+    f.appBar = appBar
 
-    -- Top accent bar (Cyan aesthetic strip)
-    local topBar = f:CreateTexture(nil, "ARTWORK")
-    topBar:SetPoint("TOPLEFT", f, "TOPLEFT", 1, -1)
-    topBar:SetPoint("TOPRIGHT", f, "TOPRIGHT", -1, -1)
-    topBar:SetHeight(2)
-    topBar:SetColorTexture(0.0, 0.85, 0.95, 1)
-    f.topAccent = topBar
+    -- App Bar Bottom Divider (Subtle 1px M3 Outline)
+    local barDivider = f:CreateTexture(nil, "ARTWORK")
+    barDivider:SetPoint("TOPLEFT", appBar, "BOTTOMLEFT", 0, 0)
+    barDivider:SetPoint("TOPRIGHT", appBar, "BOTTOMRIGHT", 0, 0)
+    barDivider:SetHeight(1)
+    barDivider:SetColorTexture(unpack(m3.outlineVariant or { 0.16, 0.17, 0.21, 0.40 }))
 
-    -- Top title
-    local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    title:SetPoint("LEFT", f, "TOPLEFT", 14, -13)
-    title:SetText((L["CONFIG_TITLE"] or "|cff00e5ffDistractionQoL|r") .. " |cff888888v" .. versionStr .. "|r")
-    f.title = title
-    f.TitleText = title
-
-    -- Top-right close button
-    local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-    closeBtn:SetSize(22, 22)
-    closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -3, -3)
-    closeBtn:SetScript("OnClick", function()
-        if not InCombatLockdown or not InCombatLockdown() then
-            f:Hide()
-        end
-    end)
-
-    local xText = closeBtn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    xText:SetPoint("CENTER", closeBtn, "CENTER", 0, 1)
-    xText:SetText("|cffaaaaaaX|r")
-    closeBtn.xText = xText
-
-    closeBtn:HookScript("OnEnter", function(self)
-        if not self.isSkinned and self.xText then self.xText:SetText("|cffff3333X|r") end
-    end)
-    closeBtn:HookScript("OnLeave", function(self)
-        if not self.isSkinned and self.xText then self.xText:SetText("|cffaaaaaaX|r") end
-    end)
-
-    f.CloseButton = closeBtn
-    f.Close = closeBtn
-
-    -- Shortcut button to open the Setup Wizard
-    local btnWizard = CreateFrame("Button", nil, f, "BackdropTemplate")
-    btnWizard:SetSize(110, 18)
-    btnWizard:SetPoint("RIGHT", closeBtn, "LEFT", -6, 0)
-    btnWizard:SetBackdrop({
+    -- App Brand Icon
+    local appIconFrame = CreateFrame("Frame", nil, f, "BackdropTemplate")
+    appIconFrame:SetSize(28, 28)
+    appIconFrame:SetPoint("LEFT", f, "TOPLEFT", 14, -23)
+    appIconFrame:SetBackdrop({
         bgFile = "Interface\\Buttons\\WHITE8x8",
         edgeFile = "Interface\\Buttons\\WHITE8x8",
         edgeSize = 1,
         insets = { left = 1, right = 1, top = 1, bottom = 1 },
     })
-    btnWizard:SetBackdropColor(0.12, 0.12, 0.16, 0.9)
-    btnWizard:SetBackdropBorderColor(0.0, 0.70, 0.85, 0.8)
+    appIconFrame:SetBackdropColor(unpack(m3.surfaceContainerLow or { 0.06, 0.13, 0.15, 0.95 }))
+    appIconFrame:SetBackdropBorderColor(unpack(m3.outline or { 0.31, 0.36, 0.38, 0.55 }))
 
-    local wizText = btnWizard:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    wizText:SetPoint("CENTER")
-    wizText:SetText("|cff00e5ff[|r " .. (L["WIZARD_BUTTON"] or "Asistente") .. " |cff00e5ff]|r")
-    btnWizard.text = wizText
+    local appIcon = appIconFrame:CreateTexture(nil, "ARTWORK")
+    appIcon:SetSize(24, 24)
+    appIcon:SetPoint("CENTER")
+    appIcon:SetTexture("Interface\\Icons\\Spell_Shadow_DeathScream")
+    appIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
+    -- App Title
+    local fontBold = (DQ.Theme and DQ.Theme.GetFont and DQ.Theme.GetFont("bold")) or "Fonts\\FRIZQT__.TTF"
+    local fontSemiBold = (DQ.Theme and DQ.Theme.GetFont and DQ.Theme.GetFont("semibold")) or "Fonts\\FRIZQT__.TTF"
+    local fontRegular = (DQ.Theme and DQ.Theme.GetFont and DQ.Theme.GetFont("regular")) or "Fonts\\FRIZQT__.TTF"
+
+    local title = f:CreateFontString(nil, "OVERLAY")
+    title:SetFont(fontBold, 15, "")
+    title:SetShadowOffset(0, 0)
+    title:SetPoint("LEFT", appIconFrame, "RIGHT", 10, 4)
+    title:SetTextColor(unpack(m3.onSurface or { 0.90, 0.91, 0.94, 1.0 }))
+    title:SetText("DistractionQoL  |cff78909cv" .. versionStr .. "|r")
+    f.title = title
+    f.TitleText = title
+
+    -- Subtitle / Expansion Info
+    local subTitle = f:CreateFontString(nil, "OVERLAY")
+    subTitle:SetFont(fontRegular, 11, "")
+    subTitle:SetShadowOffset(0, 0)
+    subTitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -2)
+    subTitle:SetTextColor(unpack(m3.onSurfaceVariant or { 0.65, 0.70, 0.74, 1.0 }))
+    subTitle:SetText(L["SUBTITLE_EXPANSION"] or "World of Warcraft: Midnight • Temporada 2")
+
+    -- Top-Right Close Button (Modern M3 Icon Button, 28x28 centered in 46px app bar)
+    local closeBtn = self:CreateM3IconButton(f, self:GetIconPath("m3_close.png"), 28, L["BTN_CLOSE"] or "Cerrar", function()
+        if not InCombatLockdown or not InCombatLockdown() then
+            f:Hide()
+        end
+    end)
+    closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -10, -9)
+    f.CloseButton = closeBtn
+    f.Close = closeBtn
+
+    -- Setup Wizard Shortcut Button (Modern M3 Tonal Button, anchored independently)
+    local btnWizard = self:CreateM3Button(f, L["WIZARD_BUTTON"] or "Asistente", "tonal", 112, 26, self:GetIconPath("m3_wizard.png"))
+    btnWizard:SetPoint("TOPRIGHT", f, "TOPRIGHT", -46, -10)
     btnWizard:SetScript("OnClick", function()
         f:Hide()
         if DQ.Wizard and DQ.Wizard.Open then
             DQ.Wizard:Open()
         end
     end)
-    btnWizard:SetScript("OnEnter", function(self)
-        self:SetBackdropColor(0.0, 0.40, 0.50, 1)
-        self:SetBackdropBorderColor(0.0, 0.90, 1.0, 1)
-    end)
-    btnWizard:SetScript("OnLeave", function(self)
-        self:SetBackdropColor(0.12, 0.12, 0.16, 0.9)
-        self:SetBackdropBorderColor(0.0, 0.70, 0.85, 0.8)
-    end)
 
     -- ==========================================================
-    -- MODERN LEFT SIDEBAR NAVIGATION
+    -- M3 NAVIGATION RAIL (Left Drawer / Sidebar)
     -- ==========================================================
     local sidebar = CreateFrame("Frame", nil, f, "BackdropTemplate")
-    sidebar:SetPoint("TOPLEFT", f, "TOPLEFT", 1, -27)
-    sidebar:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 1, 48)
-    sidebar:SetWidth(155)
+    sidebar:SetPoint("TOPLEFT", f, "TOPLEFT", 1, -47)
+    sidebar:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 1, 51)
+    sidebar:SetWidth(175)
     sidebar:SetBackdrop({
-        bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+        bgFile = "Interface\\Buttons\\WHITE8x8",
         edgeFile = "Interface\\Buttons\\WHITE8x8",
-        tile = false,
-        tileSize = 0,
         edgeSize = 1,
         insets = { left = 1, right = 1, top = 1, bottom = 1 },
     })
-    sidebar:SetBackdropColor(0.04, 0.04, 0.06, 0.98)
-    sidebar:SetBackdropBorderColor(0.18, 0.18, 0.22, 1)
-
-    local sidebarBg = sidebar:CreateTexture(nil, "BACKGROUND", nil, -8)
-    sidebarBg:SetPoint("TOPLEFT", sidebar, "TOPLEFT", 1, -1)
-    sidebarBg:SetPoint("BOTTOMRIGHT", sidebar, "BOTTOMRIGHT", -1, 1)
-    sidebarBg:SetColorTexture(0.04, 0.04, 0.06, 0.98)
-    sidebar._dqSolidBg = sidebarBg
+    sidebar:SetBackdropColor(unpack(m3.surfaceContainerLow or { 0.06, 0.13, 0.15, 0.98 }))
+    sidebar:SetBackdropBorderColor(unpack(m3.outlineVariant or { 0.22, 0.28, 0.31, 0.40 }))
     f.sidebar = sidebar
 
+    -- Category Header Label in Nav Rail
+    local navCatLabel = sidebar:CreateFontString(nil, "OVERLAY")
+    navCatLabel:SetFont(fontBold, 10, "")
+    navCatLabel:SetShadowOffset(0, 0)
+    navCatLabel:SetPoint("TOPLEFT", sidebar, "TOPLEFT", 12, -10)
+    navCatLabel:SetTextColor(unpack(m3.outlineText or { 0.45, 0.50, 0.54, 1.0 }))
+    navCatLabel:SetText(L["CATEGORY_MODULES"] or "MÓDULOS")
+
+    -- Tab definitions using dedicated modern M3 PNG icons
     local tabDefs = {
-        { id = "release",     icon = "Interface\\Icons\\Spell_Holy_Resurrection",           label = L["TAB_RELEASE"] or "Liberación" },
-        { id = "raidflow",    icon = "Interface\\Icons\\Spell_Holy_GreaterBlessingofKings", label = L["TAB_RAIDFLOW"] or "Flujo Raid" },
-        { id = "automation",  icon = "Interface\\Icons\\INV_Gizmo_02",                      label = L["TAB_AUTOMATION"] or "Automatiz." },
-        { id = "tooltips",    icon = "Interface\\Icons\\INV_Misc_Bag_08",                   label = L["TAB_TOOLTIPS"] or "Tooltips & Botín" },
-        { id = "performance", icon = "Interface\\Icons\\Spell_Nature_Invisibilty",          label = L["TAB_PERFORMANCE"] or "Rendimiento" },
-        { id = "conflicts",   icon = "Interface\\Icons\\INV_Misc_Gear_01",                  label = L["TAB_CONFLICTS"] or "Compatibilidad" },
+        { id = "release",     icon = self:GetIconPath("m3_release.png"),       label = L["TAB_RELEASE"] or "Liberación" },
+        { id = "raidflow",    icon = self:GetIconPath("m3_raidflow.png"),      label = L["TAB_RAIDFLOW"] or "Flujo de Raid" },
+        { id = "automation",  icon = self:GetIconPath("m3_automation.png"),    label = L["TAB_AUTOMATION"] or "Automatización" },
+        { id = "tooltips",    icon = self:GetIconPath("m3_loot.png"),          label = L["TAB_TOOLTIPS"] or "Tooltips & Botín" },
+        { id = "performance", icon = self:GetIconPath("m3_performance.png"),   label = L["TAB_PERFORMANCE"] or "Rendimiento" },
+        { id = "conflicts",   icon = self:GetIconPath("m3_compatibility.png"), label = L["TAB_CONFLICTS"] or "Compatibilidad" },
     }
 
     local tabButtons = {}
@@ -178,62 +160,64 @@ function DQ.UI:CreatePanel()
             if isSelected then
                 if page then page:Show() end
                 if btn and not btn.isSkinned then
-                    btn:SetBackdropColor(0.0, 0.35, 0.45, 0.9)
-                    btn:SetBackdropBorderColor(0.0, 0.85, 0.95, 1)
-                    if btn.indicator then btn.indicator:Show() end
-                    if btn.text then btn.text:SetTextColor(1, 1, 1, 1) end
+                    -- Active M3 Capsule Pill State
+                    btn:SetBackdropColor(unpack(m3.primaryContainer or { 0.0, 0.28, 0.32, 0.95 }))
+                    btn:SetBackdropBorderColor(unpack(m3.primary or { 0.0, 0.90, 1.0, 1.0 }))
+                    if btn.icon then
+                        btn.icon:SetVertexColor(unpack(m3.onPrimaryContainer or { 0.65, 0.96, 0.98, 1.0 }))
+                        btn.icon:SetAlpha(1.0)
+                    end
+                    if btn.text then
+                        btn.text:SetTextColor(1, 1, 1, 1)
+                    end
                 end
             else
                 if page then page:Hide() end
                 if btn and not btn.isSkinned then
-                    btn:SetBackdropColor(0.08, 0.08, 0.11, 0.8)
-                    btn:SetBackdropBorderColor(0.15, 0.15, 0.18, 0.8)
-                    if btn.indicator then btn.indicator:Hide() end
-                    if btn.text then btn.text:SetTextColor(0.70, 0.70, 0.75, 1) end
+                    -- Inactive Nav Item State
+                    btn:SetBackdropColor(0, 0, 0, 0)
+                    btn:SetBackdropBorderColor(0, 0, 0, 0)
+                    if btn.icon then
+                        btn.icon:SetVertexColor(1, 1, 1)
+                        btn.icon:SetAlpha(0.70)
+                    end
+                    if btn.text then
+                        btn.text:SetTextColor(unpack(m3.onSurfaceVariant or { 0.65, 0.70, 0.74, 1.0 }))
+                    end
                 end
             end
         end
     end
     f.ShowTab = ShowTab
 
-    local btnHeight = 34
-    local btnWidth = 151
-    local btnSpacing = 3
+    local btnHeight = 36
+    local btnWidth = 163
+    local btnSpacing = 4
 
     for i, def in ipairs(tabDefs) do
         local btn = CreateFrame("Button", nil, sidebar, "BackdropTemplate")
         btn:SetSize(btnWidth, btnHeight)
-        btn:SetPoint("TOPLEFT", sidebar, "TOPLEFT", 2, -4 - ((i - 1) * (btnHeight + btnSpacing)))
+        btn:SetPoint("TOPLEFT", sidebar, "TOPLEFT", 6, -26 - ((i - 1) * (btnHeight + btnSpacing)))
         btn:SetBackdrop({
             bgFile = "Interface\\Buttons\\WHITE8x8",
             edgeFile = "Interface\\Buttons\\WHITE8x8",
             edgeSize = 1,
             insets = { left = 1, right = 1, top = 1, bottom = 1 },
         })
-        btn:SetBackdropColor(0.08, 0.08, 0.11, 0.8)
-        btn:SetBackdropBorderColor(0.15, 0.15, 0.18, 0.8)
 
-        -- Left Active Indicator Strip (3px)
-        local indicator = btn:CreateTexture(nil, "OVERLAY")
-        indicator:SetPoint("TOPLEFT", btn, "TOPLEFT", 0, 0)
-        indicator:SetPoint("BOTTOMLEFT", btn, "BOTTOMLEFT", 0, 0)
-        indicator:SetWidth(3)
-        indicator:SetColorTexture(0.0, 0.85, 0.95, 1)
-        indicator:Hide()
-        btn.indicator = indicator
-
-        -- Category Icon
+        -- Dedicated Modern M3 Icon
         local icon = btn:CreateTexture(nil, "ARTWORK")
-        icon:SetSize(18, 18)
-        icon:SetPoint("LEFT", btn, "LEFT", 8, 0)
+        icon:SetSize(20, 20)
+        icon:SetPoint("LEFT", btn, "LEFT", 10, 0)
         icon:SetTexture(def.icon)
-        icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
         btn.icon = icon
 
         -- Category Label
-        local btnText = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        btnText:SetPoint("LEFT", icon, "RIGHT", 8, 0)
-        btnText:SetPoint("RIGHT", btn, "RIGHT", -4, 0)
+        local btnText = btn:CreateFontString(nil, "OVERLAY")
+        btnText:SetFont(fontSemiBold, 12, "")
+        btnText:SetShadowOffset(0, 0)
+        btnText:SetPoint("LEFT", icon, "RIGHT", 10, 0)
+        btnText:SetPoint("RIGHT", btn, "RIGHT", -6, 0)
         btnText:SetJustifyH("LEFT")
         btnText:SetWordWrap(false)
         btnText:SetText(def.label)
@@ -244,25 +228,27 @@ function DQ.UI:CreatePanel()
         end)
         btn:SetScript("OnEnter", function(self)
             if activeTab ~= def.id and not self.isSkinned then
-                self:SetBackdropColor(0.13, 0.13, 0.18, 0.95)
-                self:SetBackdropBorderColor(0.30, 0.30, 0.38, 1)
-                if self.text then self.text:SetTextColor(0.95, 0.95, 0.95, 1) end
+                self:SetBackdropColor(unpack(m3.surfaceContainerHighest or { 0.18, 0.18, 0.22, 1.0 }))
+                self:SetBackdropBorderColor(unpack(m3.outlineVariant or { 0.16, 0.17, 0.21, 0.40 }))
+                if self.icon then self.icon:SetAlpha(1.0) end
+                if self.text then self.text:SetTextColor(1, 1, 1, 1) end
             end
         end)
         btn:SetScript("OnLeave", function(self)
             if activeTab ~= def.id and not self.isSkinned then
-                self:SetBackdropColor(0.08, 0.08, 0.11, 0.8)
-                self:SetBackdropBorderColor(0.15, 0.15, 0.18, 0.8)
-                if self.text then self.text:SetTextColor(0.70, 0.70, 0.75, 1) end
+                self:SetBackdropColor(0, 0, 0, 0)
+                self:SetBackdropBorderColor(0, 0, 0, 0)
+                if self.icon then self.icon:SetAlpha(0.70) end
+                if self.text then self.text:SetTextColor(unpack(m3.onSurfaceVariant or { 0.62, 0.64, 0.70, 1.0 })) end
             end
         end)
 
         tabButtons[def.id] = btn
 
-        -- Container page for this tab (Width ~544px, Height ~440px)
+        -- Container page for this tab
         local page = CreateFrame("Frame", nil, f)
-        page:SetPoint("TOPLEFT", sidebar, "TOPRIGHT", 10, 0)
-        page:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -10, 52)
+        page:SetPoint("TOPLEFT", sidebar, "TOPRIGHT", 12, 0)
+        page:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -12, 54)
         tabPages[def.id] = page
     end
 
@@ -289,34 +275,42 @@ function DQ.UI:CreatePanel()
     end
 
     -- ==========================================================
-    -- BOTTOM ACTION BAR (Common to all tabs)
+    -- M3 BOTTOM ACTION BAR (50px High Tonal Bar)
     -- ==========================================================
     local bottomBar = f:CreateTexture(nil, "BACKGROUND")
     bottomBar:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 1, 1)
     bottomBar:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -1, 1)
-    bottomBar:SetHeight(48)
-    bottomBar:SetColorTexture(0, 0, 0, 0.40)
+    bottomBar:SetHeight(50)
+    bottomBar:SetColorTexture(unpack(m3.surfaceContainerLow or { 0.09, 0.09, 0.11, 0.98 }))
 
-    local btnW = 110
-    local btnH = 26
-    local bY = 12
+    -- Bottom Bar Top Divider
+    local botDivider = f:CreateTexture(nil, "ARTWORK")
+    botDivider:SetPoint("BOTTOMLEFT", bottomBar, "TOPLEFT", 0, 0)
+    botDivider:SetPoint("BOTTOMRIGHT", bottomBar, "TOPRIGHT", 0, 0)
+    botDivider:SetHeight(1)
+    botDivider:SetColorTexture(unpack(m3.outlineVariant or { 0.16, 0.17, 0.21, 0.40 }))
 
-    local btnTest = self:CreateFlatButton(f, L["BTN_TEST"] or "Probar Alerta", btnW, btnH)
+    local bY = 10
+
+    -- Button 1: Test Alert (M3 Filled Button - Primary)
+    local btnTest = self:CreateM3Button(f, L["BTN_TEST"] or "Probar Alerta", "filled", 125, 30)
     btnTest:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 14, bY)
     btnTest:SetScript("OnClick", function()
         DQ.Alert:Trigger()
     end)
 
-    local btnSim = self:CreateFlatButton(f, L["BTN_SIM"] or "Simular Muerte", btnW, btnH)
-    btnSim:SetPoint("LEFT", btnTest, "RIGHT", 8, 0)
+    -- Button 2: Simulate Death (M3 Tonal Button - Secondary)
+    local btnSim = self:CreateM3Button(f, L["BTN_SIM"] or "Simular Muerte", "tonal", 125, 30)
+    btnSim:SetPoint("LEFT", btnTest, "RIGHT", 10, 0)
     btnSim:SetScript("OnClick", function()
         if DQ.Detection and DQ.Detection.StartSimulation then
             DQ.Detection:StartSimulation()
         end
     end)
 
-    local btnMute = self:CreateFlatButton(f, "", 140, btnH)
-    btnMute:SetPoint("LEFT", btnSim, "RIGHT", 8, 0)
+    -- Button 3: Mute Sound Toggle (M3 Dynamic Tonal / Error Button)
+    local btnMute = self:CreateM3Button(f, "", "tonal", 155, 30)
+    btnMute:SetPoint("LEFT", btnSim, "RIGHT", 10, 0)
     btnMute:SetScript("OnClick", function()
         local current = DQ.Config:Get("releaseGuard", "soundEnabled") ~= false
         local newVal = not current
@@ -325,8 +319,9 @@ function DQ.UI:CreatePanel()
     end)
     f.btnMute = btnMute
 
-    local btnClose = self:CreateFlatButton(f, L["BTN_CLOSE"] or "Cerrar", 85, btnH)
-    btnClose:SetPoint("RIGHT", f, "BOTTOMRIGHT", -14, bY)
+    -- Button 4: Close (M3 Outlined Button)
+    local btnClose = self:CreateM3Button(f, L["BTN_CLOSE"] or "Cerrar", "outlined", 85, 30)
+    btnClose:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -14, bY)
     btnClose:SetScript("OnClick", function()
         if not InCombatLockdown or not InCombatLockdown() then
             f:Hide()
@@ -351,17 +346,13 @@ function DQ.UI:UpdateSoundControls()
     if not configFrame then return end
     local L = DQ.L or {}
     local soundOn = DQ.Config:Get("releaseGuard", "soundEnabled") ~= false
-    local iconStr = self:GetSoundIcon(soundOn, 14)
+    local iconStr = self:GetSoundIcon(soundOn, 16)
 
     if configFrame.btnMute then
         local label = soundOn and (L["BTN_MUTE"] or "Mutear Sonido") or (L["BTN_UNMUTE"] or "Activar Sonido")
         configFrame.btnMute:SetButtonText(iconStr .. label)
-        if not configFrame.btnMute.isSkinned then
-            if soundOn then
-                configFrame.btnMute:SetBackdropBorderColor(0.24, 0.24, 0.30, 1)
-            else
-                configFrame.btnMute:SetBackdropBorderColor(0.85, 0.20, 0.20, 1) -- Red highlight when muted
-            end
+        if configFrame.btnMute.SetVariant then
+            configFrame.btnMute:SetVariant(soundOn and "tonal" or "error")
         end
     end
     if configFrame.cbSound then

@@ -8,24 +8,28 @@ DQ.UI = DQ.UI or {}
 
 function DQ.UI:BuildTabCompatibility(parentFrame, pConflicts)
     local L = DQ.L or {}
+    local m3 = (DQ.Theme and DQ.Theme.M3) or {}
 
-    local confTitle = pConflicts:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    confTitle:SetPoint("TOPLEFT", pConflicts, "TOPLEFT", 4, 0)
-    confTitle:SetText("|cff00e5ff" .. (L["SECTION_CONFLICTS_TITLE"] or "Resolución de Conflictos & Compatibilidad") .. "|r")
+    local confTitle = pConflicts:CreateFontString(nil, "OVERLAY")
+    confTitle:SetPoint("TOPLEFT", pConflicts, "TOPLEFT", 6, 0)
+    DQ.Theme.ApplyText(confTitle, 14, "bold", m3.primary)
+    confTitle:SetText(L["SECTION_CONFLICTS_TITLE"] or "Resolución de Conflictos & Compatibilidad")
 
-    local confDesc = pConflicts:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    confDesc:SetPoint("TOPLEFT", confTitle, "BOTTOMLEFT", 0, -4)
+    local confDesc = pConflicts:CreateFontString(nil, "OVERLAY")
+    confDesc:SetPoint("TOPLEFT", confTitle, "BOTTOMLEFT", 0, -3)
     confDesc:SetPoint("RIGHT", pConflicts, "RIGHT", -4, 0)
     confDesc:SetJustifyH("LEFT")
     confDesc:SetWordWrap(true)
+    DQ.Theme.ApplyText(confDesc, 11, "regular", m3.onSurfaceVariant)
     confDesc:SetText(L["SECTION_CONFLICTS_DESC"] or "Detecta funciones compartidas con EllesmereUI y ElvUI. Puedes definir qué addon controla cada función o restablecer los avisos emergentes.")
 
     -- Feedback alert banner displayed on selection changes
-    local confFeedback = pConflicts:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    local confFeedback = pConflicts:CreateFontString(nil, "OVERLAY")
     confFeedback:SetPoint("TOPLEFT", confDesc, "BOTTOMLEFT", 0, -3)
     confFeedback:SetPoint("RIGHT", pConflicts, "RIGHT", -4, 0)
     confFeedback:SetJustifyH("LEFT")
     confFeedback:SetWordWrap(false)
+    DQ.Theme.ApplyText(confFeedback, 11, "semibold", m3.secondary)
     confFeedback:SetText("")
 
     local feedbackSeq = 0
@@ -137,7 +141,7 @@ function DQ.UI:BuildTabCompatibility(parentFrame, pConflicts)
         local rowBg = pConflicts:CreateTexture(nil, "BACKGROUND")
         rowBg:SetPoint("TOPLEFT", pConflicts, "TOPLEFT", 0, rowY)
         rowBg:SetPoint("BOTTOMRIGHT", pConflicts, "TOPRIGHT", 0, rowY - 42)
-        rowBg:SetColorTexture(0.10, 0.10, 0.14, 0.45)
+        rowBg:SetColorTexture(unpack(m3.surfaceContainerHigh or { 0.22, 0.28, 0.31, 0.45 }))
 
         local icon = pConflicts:CreateTexture(nil, "ARTWORK")
         icon:SetSize(28, 28)
@@ -150,18 +154,20 @@ function DQ.UI:BuildTabCompatibility(parentFrame, pConflicts)
         local btnDQ = self:CreateChoiceButton(pConflicts, 112, 24, "DistractionQoL")
         btnDQ:SetPoint("RIGHT", pConflicts, "TOPRIGHT", -124, rowY - 21)
 
-        local lblName = pConflicts:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        local lblName = pConflicts:CreateFontString(nil, "OVERLAY")
         lblName:SetPoint("TOPLEFT", icon, "TOPRIGHT", 8, 3)
         lblName:SetPoint("RIGHT", btnDQ, "LEFT", -8, 0)
         lblName:SetJustifyH("LEFT")
         lblName:SetWordWrap(false)
-        lblName:SetText("|cffffffff" .. name .. "|r")
+        DQ.Theme.ApplyText(lblName, 12, "semibold", m3.onSurface)
+        lblName:SetText(name)
 
-        local lblStatus = pConflicts:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+        local lblStatus = pConflicts:CreateFontString(nil, "OVERLAY")
         lblStatus:SetPoint("TOPLEFT", lblName, "BOTTOMLEFT", 0, -3)
         lblStatus:SetPoint("RIGHT", btnDQ, "LEFT", -8, 0)
         lblStatus:SetJustifyH("LEFT")
         lblStatus:SetWordWrap(false)
+        DQ.Theme.ApplyText(lblStatus, 11, "regular", m3.onSurfaceVariant)
         lblStatus:SetText("Verificando...")
 
         btnDQ:SetScript("OnClick", function()
@@ -214,7 +220,7 @@ function DQ.UI:BuildTabCompatibility(parentFrame, pConflicts)
         }
     end
 
-    local btnResetConflicts = self:CreateFlatButton(pConflicts, L["BTN_RESET_CONFLICTS"] or "Restablecer Avisos (Volver a Preguntar)", 270, 24)
+    local btnResetConflicts = self:CreateM3Button(pConflicts, L["BTN_RESET_CONFLICTS"] or "Restablecer Avisos (Volver a Preguntar)", "tonal", 290, 26)
     btnResetConflicts:SetPoint("BOTTOMLEFT", pConflicts, "BOTTOMLEFT", 4, 8)
     btnResetConflicts:SetScript("OnClick", function()
         if DQ.ConflictResolver then

@@ -8,13 +8,16 @@ DQ.UI = DQ.UI or {}
 
 function DQ.UI:BuildTabAutomations(parentFrame, pAuto)
     local L = DQ.L or {}
+    local m3 = (DQ.Theme and DQ.Theme.M3) or {}
 
-    local autoTitle = pAuto:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    autoTitle:SetPoint("TOPLEFT", pAuto, "TOPLEFT", 4, 0)
-    autoTitle:SetText("|cff00e5ff" .. (L["SECTION_AUTO_TITLE"] or "Automatizaciones QoL") .. "|r")
+    local autoTitle = pAuto:CreateFontString(nil, "OVERLAY")
+    autoTitle:SetPoint("TOPLEFT", pAuto, "TOPLEFT", 6, 0)
+    DQ.Theme.ApplyText(autoTitle, 14, "bold", m3.primary)
+    autoTitle:SetText(L["SECTION_AUTO_TITLE"] or "Automatizaciones QoL")
 
-    local autoDesc = pAuto:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    autoDesc:SetPoint("TOPLEFT", autoTitle, "BOTTOMLEFT", 0, -4)
+    local autoDesc = pAuto:CreateFontString(nil, "OVERLAY")
+    autoDesc:SetPoint("TOPLEFT", autoTitle, "BOTTOMLEFT", 0, -3)
+    DQ.Theme.ApplyText(autoDesc, 11, "regular", m3.onSurfaceVariant)
     autoDesc:SetText(L["SECTION_AUTO_DESC"] or "Acciones instantáneas sin spam de eventos ni sobrecoste de CPU.")
 
     -- 1. Auto Res
@@ -87,7 +90,7 @@ function DQ.UI:BuildTabAutomations(parentFrame, pAuto)
         end
     end)
 
-    local btnSortNow = self:CreateFlatButton(pAuto, L["BTN_SORT_BAGS"] or "Ordenar Bolsas Ahora", 180, 22)
+    local btnSortNow = self:CreateM3Button(pAuto, L["BTN_SORT_BAGS"] or "Ordenar Bolsas Ahora", "tonal", 180, 26)
     btnSortNow:SetPoint("TOPLEFT", pAuto, "TOPLEFT", 8, -330)
     btnSortNow:SetScript("OnClick", function()
         if DQ.BagSort then DQ.BagSort:SortBags() end

@@ -8,13 +8,16 @@ DQ.UI = DQ.UI or {}
 
 function DQ.UI:BuildTabRelease(parentFrame, pRelease)
     local L = DQ.L or {}
+    local m3 = (DQ.Theme and DQ.Theme.M3) or {}
 
-    local relTitle = pRelease:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    relTitle:SetPoint("TOPLEFT", pRelease, "TOPLEFT", 4, 0)
-    relTitle:SetText("|cff00e5ff" .. (L["SECTION_RELEASE_TITLE"] or "Protección Anti-Liberar") .. "|r")
+    local relTitle = pRelease:CreateFontString(nil, "OVERLAY")
+    relTitle:SetPoint("TOPLEFT", pRelease, "TOPLEFT", 6, 0)
+    DQ.Theme.ApplyText(relTitle, 14, "bold", m3.primary)
+    relTitle:SetText(L["SECTION_RELEASE_TITLE"] or "Protección Anti-Liberar")
 
-    local relDesc = pRelease:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    relDesc:SetPoint("TOPLEFT", relTitle, "BOTTOMLEFT", 0, -4)
+    local relDesc = pRelease:CreateFontString(nil, "OVERLAY")
+    relDesc:SetPoint("TOPLEFT", relTitle, "BOTTOMLEFT", 0, -3)
+    DQ.Theme.ApplyText(relDesc, 11, "regular", m3.onSurfaceVariant)
     relDesc:SetText(L["SECTION_RELEASE_DESC"] or "Evita liberar espíritu por accidente en combate. Mantén SHIFT para liberar.")
 
     -- Checkbox: Dungeons
@@ -70,15 +73,22 @@ function DQ.UI:BuildTabRelease(parentFrame, pRelease)
     end)
     parentFrame.cbSound = cbSound
 
+    -- Sound indicator icon placed directly adjacent to the checkbox box
     local soundStatusIcon = pRelease:CreateTexture(nil, "ARTWORK")
     soundStatusIcon:SetSize(16, 16)
-    soundStatusIcon:SetPoint("LEFT", cbSound.text, "RIGHT", 6, 0)
+    soundStatusIcon:SetPoint("LEFT", cbSound, "RIGHT", 6, 0)
     soundStatusIcon:SetTexture(self:ResolveSoundPath(DQ.Config:Get("releaseGuard", "soundEnabled") ~= false))
     parentFrame.soundStatusIcon = soundStatusIcon
 
-    -- Sound Presets Selector
-    local lblSoundChoice = pRelease:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    lblSoundChoice:SetPoint("TOPLEFT", pRelease, "TOPLEFT", 10, -244)
+    if cbSound.text then
+        cbSound.text:ClearAllPoints()
+        cbSound.text:SetPoint("LEFT", soundStatusIcon, "RIGHT", 6, 0)
+    end
+
+    -- Sound Presets Selector (dedicated label row to avoid any text cutoff in any language)
+    local lblSoundChoice = pRelease:CreateFontString(nil, "OVERLAY")
+    lblSoundChoice:SetPoint("TOPLEFT", pRelease, "TOPLEFT", 8, -246)
+    DQ.Theme.ApplyText(lblSoundChoice, 12, "semibold", m3.onSurface)
     lblSoundChoice:SetText(L["OPT_AUDIO_CHOICE_LABEL"] or "Efecto de Audio:")
 
     local soundButtons = {}
@@ -95,21 +105,22 @@ function DQ.UI:BuildTabRelease(parentFrame, pRelease)
             local b = soundButtons[opt.key]
             if b then
                 if opt.key == current then
-                    b:SetBackdropColor(0.0, 0.50, 0.65, 0.95)
-                    b:SetBackdropBorderColor(0.0, 0.90, 1.0, 1)
+                    b:SetBackdropColor(unpack(m3.primaryContainer or { 0.0, 0.28, 0.32, 0.95 }))
+                    b:SetBackdropBorderColor(unpack(m3.primary or { 0.0, 0.90, 1.0, 1 }))
                     if b.text then b.text:SetTextColor(1, 1, 1, 1) end
                 else
-                    b:SetBackdropColor(0.10, 0.10, 0.14, 0.95)
-                    b:SetBackdropBorderColor(0.20, 0.20, 0.25, 1)
-                    if b.text then b.text:SetTextColor(0.70, 0.70, 0.75, 1) end
+                    b:SetBackdropColor(unpack(m3.surfaceContainerHigh or { 0.22, 0.28, 0.31, 0.95 }))
+                    b:SetBackdropBorderColor(unpack(m3.outline or { 0.31, 0.36, 0.38, 0.55 }))
+                    if b.text then b.text:SetTextColor(unpack(m3.onSurfaceVariant or { 0.65, 0.70, 0.74, 1.0 })) end
                 end
             end
         end
     end
 
+    -- Dedicated preset buttons row directly below the label
     for i, opt in ipairs(soundOptions) do
-        local btnOpt = self:CreateFlatButton(pRelease, opt.label, 80, 20)
-        btnOpt:SetPoint("TOPLEFT", pRelease, "TOPLEFT", 105 + (i - 1) * 85, -242)
+        local btnOpt = self:CreateFlatButton(pRelease, opt.label, 95, 24)
+        btnOpt:SetPoint("TOPLEFT", pRelease, "TOPLEFT", 8 + (i - 1) * 105, -270)
         btnOpt:SetScript("OnClick", function()
             DQ.Config:Set("releaseGuard", "soundChoice", opt.key)
             RefreshSoundButtons()
@@ -123,12 +134,14 @@ function DQ.UI:BuildTabRelease(parentFrame, pRelease)
     RefreshSoundButtons()
 
     -- Checkbox: Auto Release on Full Wipe in M+
-    self:CreateCheckbox(pRelease, L["OPT_WIPE_AUTO_RELEASE"] or "M+ Wipe Total: Auto-liberar espíritu si muere todo el grupo", 8, -276, DQ.Config:Get("mythicPlus", "autoReleaseOnWipe"), function(checked)
+    self:CreateCheckbox(pRelease, L["OPT_WIPE_AUTO_RELEASE"] or "M+ Wipe Total: Auto-liberar espíritu si muere todo el grupo", 8, -312, DQ.Config:Get("mythicPlus", "autoReleaseOnWipe"), function(checked)
         DQ.Config:Set("mythicPlus", "autoReleaseOnWipe", checked)
     end)
-    local wipeDesc = pRelease:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    wipeDesc:SetPoint("TOPLEFT", pRelease, "TOPLEFT", 32, -302)
+    local wipeDesc = pRelease:CreateFontString(nil, "OVERLAY")
+    wipeDesc:SetPoint("TOPLEFT", pRelease, "TOPLEFT", 30, -336)
     wipeDesc:SetPoint("RIGHT", pRelease, "RIGHT", -12, 0)
     wipeDesc:SetJustifyH("LEFT")
-    wipeDesc:SetText(L["OPT_WIPE_AUTO_RELEASE_DESC"] or "|cff888888Desactiva la protección y libera al morir los 5 jugadores para ahorrar tiempo de piedra.|r")
+    wipeDesc:SetWordWrap(true)
+    DQ.Theme.ApplyText(wipeDesc, 11, "regular", m3.onSurfaceVariant)
+    wipeDesc:SetText(L["OPT_WIPE_AUTO_RELEASE_DESC"] or "Desactiva la protección y libera al morir los 5 jugadores para ahorrar tiempo de piedra.")
 end

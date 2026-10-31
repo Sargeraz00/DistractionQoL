@@ -8,13 +8,16 @@ DQ.UI = DQ.UI or {}
 
 function DQ.UI:BuildTabRaidFlow(parentFrame, pFlow)
     local L = DQ.L or {}
+    local m3 = (DQ.Theme and DQ.Theme.M3) or {}
 
-    local flowTitle = pFlow:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    flowTitle:SetPoint("TOPLEFT", pFlow, "TOPLEFT", 4, 0)
-    flowTitle:SetText("|cff00e5ff" .. (L["SECTION_RAIDFLOW_TITLE"] or "Flujo de Banda & Preparación") .. "|r")
+    local flowTitle = pFlow:CreateFontString(nil, "OVERLAY")
+    flowTitle:SetPoint("TOPLEFT", pFlow, "TOPLEFT", 6, 0)
+    DQ.Theme.ApplyText(flowTitle, 14, "bold", m3.primary)
+    flowTitle:SetText(L["SECTION_RAIDFLOW_TITLE"] or "Flujo de Banda & Preparación")
 
-    local flowDesc = pFlow:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    flowDesc:SetPoint("TOPLEFT", flowTitle, "BOTTOMLEFT", 0, -4)
+    local flowDesc = pFlow:CreateFontString(nil, "OVERLAY")
+    flowDesc:SetPoint("TOPLEFT", flowTitle, "BOTTOMLEFT", 0, -3)
+    DQ.Theme.ApplyText(flowDesc, 11, "regular", m3.onSurfaceVariant)
     flowDesc:SetText(L["SECTION_RAIDFLOW_DESC"] or "Herramientas dirigidas por eventos para no perder llamadas mientras estás distraído.")
 
     -- Checkbox: Flash Taskbar
@@ -43,7 +46,7 @@ function DQ.UI:BuildTabRaidFlow(parentFrame, pFlow)
     end)
 
     -- Manual Consumables Check button
-    local btnCheckNow = self:CreateFlatButton(pFlow, L["OPT_BTN_CHECK_CONSUMABLES"] or "Revisar Consumibles Ahora", 200, 24)
+    local btnCheckNow = self:CreateM3Button(pFlow, L["OPT_BTN_CHECK_CONSUMABLES"] or "Revisar Consumibles Ahora", "tonal", 220, 26)
     btnCheckNow:SetPoint("TOPLEFT", pFlow, "TOPLEFT", 8, -214)
     btnCheckNow:SetScript("OnClick", function()
         if DQ.RaidFlow then DQ.RaidFlow:CheckConsumables(true) end
@@ -53,9 +56,11 @@ function DQ.UI:BuildTabRaidFlow(parentFrame, pFlow)
     self:CreateCheckbox(pFlow, L["OPT_TOOLTIP_TARGETED_BY"] or "Tooltip de Mob: Mostrar qué miembros lo están enfocando (Targeted By)", 8, -256, DQ.Config:Get("tooltip", "targetedBy"), function(checked)
         DQ.Config:Set("tooltip", "targetedBy", checked)
     end)
-    local ttDesc = pFlow:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    local ttDesc = pFlow:CreateFontString(nil, "OVERLAY")
     ttDesc:SetPoint("TOPLEFT", pFlow, "TOPLEFT", 32, -282)
     ttDesc:SetPoint("RIGHT", pFlow, "RIGHT", -12, 0)
     ttDesc:SetJustifyH("LEFT")
-    ttDesc:SetText(L["OPT_TOOLTIP_TARGETED_BY_DESC"] or "|cff888888Agrega al tooltip del objetivo la cantidad y rol de jugadores que lo tienen en target (ej: 1T 1H 2D).|r")
+    ttDesc:SetWordWrap(true)
+    DQ.Theme.ApplyText(ttDesc, 11, "regular", m3.onSurfaceVariant)
+    ttDesc:SetText(L["OPT_TOOLTIP_TARGETED_BY_DESC"] or "Agrega al tooltip del objetivo la cantidad y rol de jugadores que lo tienen en target (ej: 1T 1H 2D).")
 end

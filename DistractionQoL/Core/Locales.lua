@@ -20,8 +20,11 @@ if isSpanish then
     L["TAB_RELEASE"] = "Liberación"
     L["TAB_RAIDFLOW"] = "Flujo de Raid"
     L["TAB_AUTOMATION"] = "Automatizaciones"
+    L["TAB_TOOLTIPS"] = "Tooltips & Botín"
     L["TAB_PERFORMANCE"] = "Rendimiento"
     L["TAB_CONFLICTS"] = "Compatibilidad"
+    L["CATEGORY_MODULES"] = "MÓDULOS"
+    L["SUBTITLE_EXPANSION"] = "World of Warcraft: Midnight • Temporada 2"
 
     -- Section 1: Anti-Release
     L["SECTION_RELEASE_TITLE"] = "Protección Anti-Liberar (Spirit Release Guard)"
@@ -116,7 +119,7 @@ if isSpanish then
 
     -- Consumables & Automation Messages
     L["MSG_MISSING_CONSUMABLES"] = "|cffff3333[¡Aviso de Consumibles!]|r Te falta: %s"
-    L["FOOD_BUFF"] = "Comida (Well Fed)"
+    L["FOOD_BUFF"] = "Comida (Bien alimentado)"
     L["FLASK_BUFF"] = "Frasco / Poción"
     L["RUNE_BUFF"] = "Runa de Aumento"
     L["WEAPON_BUFF"] = "Encantamiento/Aceite de Arma"
@@ -357,8 +360,11 @@ else
     L["TAB_RELEASE"] = "Release"
     L["TAB_RAIDFLOW"] = "Raid Flow"
     L["TAB_AUTOMATION"] = "Automation"
+    L["TAB_TOOLTIPS"] = "Tooltips & Loot"
     L["TAB_PERFORMANCE"] = "Performance"
     L["TAB_CONFLICTS"] = "Compatibility"
+    L["CATEGORY_MODULES"] = "MODULES"
+    L["SUBTITLE_EXPANSION"] = "World of Warcraft: Midnight • Season 2"
 
     -- Section 1: Anti-Release
     L["SECTION_RELEASE_TITLE"] = "Anti-Release Protection (Spirit Release Guard)"

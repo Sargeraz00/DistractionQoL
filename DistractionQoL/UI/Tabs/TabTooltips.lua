@@ -8,12 +8,15 @@ DQ.UI = DQ.UI or {}
 
 -- Sub-builder: Inventory Item Counts (Left) & Crafting Reagents (Right)
 local function BuildTopSections(ui, pTooltips, L)
+    local m3 = (DQ.Theme and DQ.Theme.M3) or {}
+
     -- ==========================================================
     -- LEFT COLUMN: INVENTORY ITEM COUNTS (X = 8, MaxWidth = 245)
     -- ==========================================================
-    local secCounts = pTooltips:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    local secCounts = pTooltips:CreateFontString(nil, "OVERLAY")
     secCounts:SetPoint("TOPLEFT", pTooltips, "TOPLEFT", 8, 0)
-    secCounts:SetText("|cff00e5ff" .. (L["TOOLTIP_ITEM_COUNT_TITLE"] or "Desglose de Inventario en Objetos") .. "|r")
+    DQ.Theme.ApplyText(secCounts, 13, "bold", m3.primary)
+    secCounts:SetText(L["TOOLTIP_ITEM_COUNT_TITLE"] or "Desglose de Inventario en Objetos")
 
     local cbBags, cbBank, cbWarband, cbTotal, cbHideSingle, cbShift
 
@@ -64,9 +67,10 @@ local function BuildTopSections(ui, pTooltips, L)
     -- RIGHT COLUMN: REAGENTS (X = 276, MaxWidth = 245)
     -- ==========================================================
     local colX = 276
-    local secReagents = pTooltips:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    local secReagents = pTooltips:CreateFontString(nil, "OVERLAY")
     secReagents:SetPoint("TOPLEFT", pTooltips, "TOPLEFT", colX, 0)
-    secReagents:SetText("|cff00e5ff" .. (L["TOOLTIP_REAGENTS_TITLE"] or "Materiales de Profesión") .. "|r")
+    DQ.Theme.ApplyText(secReagents, 13, "bold", m3.primary)
+    secReagents:SetText(L["TOOLTIP_REAGENTS_TITLE"] or "Materiales de Profesión")
 
     local cbCurrentExpac
     local isReagentsEnabled = DQ.Config:Get("tooltip", "reagentExpansion", "enabled") ~= false
@@ -91,17 +95,20 @@ end
 
 -- Sub-builder: Combat & Loot Trade Advisor (Full Width, Zero Clipping)
 local function BuildBottomSection(ui, pTooltips, L)
+    local m3 = (DQ.Theme and DQ.Theme.M3) or {}
+
     -- Subtle divider line
     local divider = pTooltips:CreateTexture(nil, "ARTWORK")
     divider:SetPoint("TOPLEFT", pTooltips, "TOPLEFT", 8, -188)
     divider:SetPoint("TOPRIGHT", pTooltips, "TOPRIGHT", -8, -188)
     divider:SetHeight(1)
-    divider:SetColorTexture(0.20, 0.20, 0.24, 0.70)
+    divider:SetColorTexture(unpack(m3.outlineVariant or { 0.22, 0.28, 0.31, 0.40 }))
 
     -- Section Title
-    local secBottom = pTooltips:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    local secBottom = pTooltips:CreateFontString(nil, "OVERLAY")
     secBottom:SetPoint("TOPLEFT", pTooltips, "TOPLEFT", 8, -198)
-    secBottom:SetText("|cff00e5ff" .. (L["TOOLTIP_MOBS_TITLE"] or "Combate & PNJs") .. " & " .. (L["LOOT_ADVISOR_TITLE"] or "Asesor de Botín") .. "|r")
+    DQ.Theme.ApplyText(secBottom, 13, "bold", m3.primary)
+    secBottom:SetText((L["TOOLTIP_MOBS_TITLE"] or "Combate & PNJs") .. " & " .. (L["LOOT_ADVISOR_TITLE"] or "Asesor de Botín"))
 
     -- 1. Targeted By (Full Width)
     ui:CreateCheckbox(pTooltips, L["OPT_TOOLTIP_TARGETED_BY"] or "Mostrar enfocadores (Targeted By)", 8, -222, DQ.Config:Get("tooltip", "targetedBy"), function(checked)
@@ -138,8 +145,8 @@ local function BuildBottomSection(ui, pTooltips, L)
 
     UpdateLootSubStates(isLootAdvisorEnabled)
 
-    -- Test Loot Advisor Button
-    local btnTestLoot = ui:CreateFlatButton(pTooltips, L["BTN_TEST_LOOT"] or "Probar Asesor de Botín", 180, 22)
+    -- Test Loot Advisor Button (M3 Tonal Button)
+    local btnTestLoot = ui:CreateM3Button(pTooltips, L["BTN_TEST_LOOT"] or "Probar Asesor de Botín", "tonal", 190, 26)
     btnTestLoot:SetPoint("TOPLEFT", pTooltips, "TOPLEFT", 24, -330)
     btnTestLoot:SetScript("OnClick", function()
         if DQ.TradeAdvisor and DQ.TradeAdvisor.SimulateTestLoot then
