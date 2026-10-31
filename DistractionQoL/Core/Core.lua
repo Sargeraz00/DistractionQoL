@@ -13,13 +13,10 @@ DQ:RegisterModule("Automation",      DQ.Automation,      100)
 DQ:RegisterModule("Optimizer",       DQ.Optimizer,       100)
 DQ:RegisterModule("BagSort",         DQ.BagSort,         100)
 DQ:RegisterModule("ChatHistory",     DQ.ChatHistory,     100)
-DQ:RegisterModule("Keystone",        DQ.Keystone,        100)
 DQ:RegisterModule("WipeRelease",     DQ.WipeRelease,     100)
 DQ:RegisterModule("TargetedBy",      DQ.TargetedBy,      100)
 DQ:RegisterModule("ItemCounts",      DQ.ItemCounts,      100)
 DQ:RegisterModule("TradeAdvisor",    DQ.TradeAdvisor,    100)
-DQ:RegisterModule("UtilityRadar",    DQ.UtilityRadar,    100)
-DQ:RegisterModule("CommandHub",      DQ.CommandHub,      100)
 DQ:RegisterModule("SettingsCategory", {
     Init = function()
         if DQ.UI and DQ.UI.RegisterSettingsCategory then

@@ -98,15 +98,10 @@ local function InitDefaultCommands()
         if DQ.Wizard and DQ.Wizard.Open then DQ.Wizard:Open() end
     end, "Abre el asistente de bienvenida y configuración rápida.", "Opens the first-time setup and onboarding wizard.", 10)
 
-    -- 2. Command Hub / Keys
-    DQ:RegisterCommand({ "hub", "keys" }, function()
-        if DQ.CommandHub and DQ.CommandHub.Toggle then DQ.CommandHub:Toggle() end
-    end, "Centro M+ (Teleports de Midnight y matriz de llaves del grupo).", "M+ Command Hub (Midnight teleports & party keystone matrix).", 20)
-
-    -- 3. Great Vault
+    -- 2. Great Vault
     DQ:RegisterCommand("vault", function()
         if DQ.Util and DQ.Util.ToggleGreatVault then DQ.Util.ToggleGreatVault() end
-    end, "Abre la Gran Bóveda semanal al instante desde cualquier lugar.", "Opens the Great Vault instantly from anywhere.", 30)
+    end, "Abre la Gran Bóveda semanal al instante desde cualquier lugar.", "Opens the Great Vault instantly from anywhere.", 20)
 
     -- 4. Bag Sort
     DQ:RegisterCommand({ "sort", "bags", "bolsas" }, function()

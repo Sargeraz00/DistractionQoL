@@ -57,16 +57,14 @@ An **ultra-lightweight**, event-driven Quality-of-Life (QoL) and performance too
 - **Chat History Recall**: Arrow Up / Arrow Down recalls previous commands and messages, persisted across reloads.
 
 ### 5. 🗝️ Mythic+ Toolkit
-- **M+ Command Hub** (`/qol hub`): Seasonal Midnight dungeons with personal records, 1-click Hero's Path teleports, and a party keystone matrix with 1-click group announcement.
-- **Keystone Auto-Slotter**: Slots your key into the Font of Power instantly.
-- **Full Wipe Auto-Release**: Detects a full party wipe after combat and releases to save key timer (secret-value safe).
-- **Great Vault Shortcut** (`/qol vault`).
+- **Full Wipe Auto-Release**: Detects a full party wipe in M+ after combat and releases immediately to save precious timer seconds (secret-value safe).
+- **Great Vault Shortcut** (`/qol vault`): Opens the Great Vault instantly from anywhere.
 
-### 6. 💰 Loot, LFG & Tooltips
-- **Tradeable Loot Advisor**: At run/boss completion, lists tradeable party loot usable by your class, flags ilvl upgrades, and offers a polite 1-click whisper.
-- **LFG Utility Radar**: Analyzes Premade Group Finder listings for missing Bloodlust / Battle Rez and class saturation, highlighting groups where your class fills the gap.
-- **Item Counts Tooltip**: Breakdown across Bags, Bank and Warband Bank, plus crafting reagent expansion tag (current expansion highlighted).
-- **Targeted By Tooltip**: Shows how many tanks / healers / DPS in your group are targeting the hovered NPC.
+### 6. 💰 Loot & Tooltips
+- **Tradeable Loot Advisor**: At dungeon end or boss kill, detects tradeable party loot usable by your class, calculates ilvl upgrades (`+X ilvl (¡Mejora!)`), and offers a polite 1-click whisper to request the piece.
+- **Instant Test Simulator** (`/qol loot`): Instantly simulates 3 realistic dungeon drops (tailored to your class armor, rings, and trinkets) with functional whisper buttons.
+- **Item Counts Tooltip**: Breakdown across Bags, Bank, and Warband Bank, plus crafting reagent expansion tag.
+- **Targeted By Tooltip**: Shows how many tanks, healers, and DPS in your group are targeting the hovered NPC.
 
 ### 7. 🚀 Raid Performance & FPS Optimizer
 - **One-Click Raid Graphics Optimizer** tuned for 20-30 player raids and Mythic+.
@@ -74,11 +72,11 @@ An **ultra-lightweight**, event-driven Quality-of-Life (QoL) and performance too
 - **Full Reversibility** with Backup / Restore snapshots.
 - **Loading Screen Memory Cleanup** to prevent combat stutter.
 
-### 8. 🤝 Intelligent Conflict Resolution
-- **EllesmereUI & ElvUI Overlap Detection**: Auto-Repair, Auto-Sell Junk, Fast Loot, Auto-Skip Cinematics, Bag Sorting and **Consumables Reminder**.
-- **Raid-Entry Consumables Prompt** *(new)*: On entering a raid or dungeon with EllesmereUI's consumables module active, a modal lets you pick the manager and briefly explains DistractionQoL's advantages (mouse wheel rotation, Midnight-only catalog, stack consolidation, dual-hand oils).
-- **Real-time Handover**: The non-selected addon's feature is disabled/re-enabled live — no reload required.
-- **"Don't Ask Again"** persistence, plus a live dashboard under `/qol` → **Compatibility**, and a gear button `[⚙]` on the consumables bar.
+### 8. 🤝 Intelligent Conflict Resolution & EllesmereUI Enhancer
+- **EllesmereUI Consumables Enhancer**: When `EllesmereUIAuraBuffReminders` is loaded, DistractionQoL automatically hooks into its reminder icons (`EABR_Icon*`), injecting mouse-wheel rotary cycling between carried consumables, stack consolidation, and smart MH/OH weapon application without duplicate bars or conflict prompts.
+- **Standalone Mode**: If EllesmereUI is absent, DistractionQoL provides a sleek, modern Obsidian HUD bar.
+- **EllesmereUI & ElvUI Overlap Detection**: Auto-Repair, Auto-Sell Junk, Fast Loot, Auto-Skip Cinematics, and Bag Sorting.
+- **Live Compatibility Dashboard**: Available under `/qol` → **Compatibility**.
 
 ### 9. 🧙 First-Time Setup Wizard
 - Step-by-step onboarding (`/qol install`) with plain-language explanations, fully localized.
@@ -92,15 +90,12 @@ Primary commands: `/qol` (or `/dqol`, `/distraction`). The legendary `/burro` al
 | Command | Description |
 | :--- | :--- |
 | `/qol` *(or `/burro`)* | Opens or closes the tabbed configuration console. |
-| `/consumables` *(or `/consumible`, `/frascos`)* | Opens the interactive Consumables HUD and shows the active controller. |
-| `/consumables choose` | Re-opens the DistractionQoL vs EllesmereUI manager choice dialog. |
-| `/qol check` *(or `buffs`, `consumables`)* | Same as `/consumables` (consumables HUD + manager). |
-| `/qol conflict` *(or `compat`)* | Opens the consumables manager choice dialog. |
+| `/consumables` *(or `/consumible`, `/frascos`)* | Opens the Consumables HUD (or activates Ellesmere Enhancer). Use `/consumables bar` for standalone. |
+| `/qol check` *(or `buffs`, `consumables`)* | Checks raid consumables status and opens manager. |
 | `/qol install` | Opens the first-time setup wizard. |
-| `/qol hub` *(or `/keys`)* | M+ Command Hub (teleports & party keystone matrix). |
 | `/qol vault` | Opens the Great Vault from anywhere. |
 | `/qol sort` | Reverse bag sort & moves reagents to the reagent bag. |
-| `/qol loot` | Simulates the Tradeable Loot Advisor popup. |
+| `/qol loot` | Simulates and tests the Tradeable Loot Advisor popup. |
 | `/qol fps` | Toggles Optimal Raid FPS ↔ original settings (`save` / `restore` sub-commands). |
 | `/qol mute` | Mutes or unmutes the alert audio. |
 | `/qol autores` | Toggles auto-accepting resurrections. |
@@ -143,15 +138,14 @@ DistractionQoL/ (Repository Root)
     ├── Modules/
     │   ├── Compatibility/       # ConflictResolver (EllesmereUI / ElvUI handover)
     │   ├── ReleaseGuard/        # Alert, Hook (taint-free release interception)
-    │   ├── RaidFlow/            # RaidFlow, ConsumablesLogic (pure), ConsumablesBar (secure HUD)
+    │   ├── RaidFlow/            # RaidFlow, ConsumablesLogic (pure), ConsumablesBar (secure HUD & Ellesmere Enhancer)
     │   ├── Automations/         # Vendor, FastLoot, Cinematics, SafeResurrect, Automation
     │   ├── Optimizer/           # Raid FPS & CVar optimizer
     │   ├── BagSort/             # BagSortLogic (pure), BagSort
-    │   ├── Chat/                # ChatHistory
-    │   ├── MythicPlus/          # Keystone, WipeRelease, CommandHub
+    │   ├── Chat/                # ChatHistory (with classic command fallbacks)
+    │   ├── MythicPlus/          # WipeRelease (full wipe auto-release)
     │   ├── Tooltip/             # TargetedBy, ItemCounts
-    │   ├── Loot/                # TradeAdvisorLogic (pure), TradeAdvisor
-    │   └── LFG/                 # UtilityRadarLogic (pure), UtilityRadar
+    │   └── Loot/                # TradeAdvisorLogic (pure), TradeAdvisor (with instant DBC & simulator)
     ├── UI/                      # Theme, Components, ConfigPanel, Wizard, Tabs/
     └── Media/                   # Sounds (Bane.ogg/.mp3) & Textures (sound_on/off)
 ```

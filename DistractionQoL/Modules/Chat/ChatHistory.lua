@@ -10,12 +10,26 @@ DQ.ChatHistory = {}
 local MAX_HISTORY_DEFAULT = 30
 local hookedBoxes = {}
 
+-- Classic most-used commands provided as fallback when history is fresh or empty
+local DEFAULT_COMMANDS = {
+    "/reload",
+    "/m",
+    "/qol",
+    "/wa",
+    "/dump",
+    "/fstack",
+    "/rl",
+}
+
 local function GetHistoryTable()
     if not DistractionQoLDB then
         DistractionQoLDB = {}
     end
     if not DistractionQoLDB.chatHistory then
         DistractionQoLDB.chatHistory = {}
+        for _, cmd in ipairs(DEFAULT_COMMANDS) do
+            table.insert(DistractionQoLDB.chatHistory, cmd)
+        end
     end
     return DistractionQoLDB.chatHistory
 end
@@ -54,7 +68,8 @@ end
 -- Retrieves next or previous history entry based on delta (+1 for older, -1 for newer)
 function DQ.ChatHistory:GetNext(editBox, delta)
     local history = GetHistoryTable()
-    if #history == 0 then return nil end
+    local list = (#history > 0) and history or DEFAULT_COMMANDS
+    if #list == 0 then return nil end
 
     local currentIdx = editBox._DQHistoryIndex or 0
 
@@ -64,8 +79,8 @@ function DQ.ChatHistory:GetNext(editBox, delta)
     end
 
     local newIdx = currentIdx + delta
-    if newIdx > #history then
-        newIdx = #history
+    if newIdx > #list then
+        newIdx = #list
     end
 
     if newIdx < 1 then
@@ -74,7 +89,7 @@ function DQ.ChatHistory:GetNext(editBox, delta)
     end
 
     editBox._DQHistoryIndex = newIdx
-    return history[newIdx]
+    return list[newIdx]
 end
 
 -- Hooks a chat edit box safely

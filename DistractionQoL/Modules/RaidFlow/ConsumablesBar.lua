@@ -464,36 +464,127 @@ function DQ.ConsumablesBar:Toggle()
     end
 end
 
--- Full interactive manager entry point: opens conflict resolver if unconfigured, plus pinned consumables bar
-function DQ.ConsumablesBar:OpenManager(forcePrompt)
-    local ext = DQ.ConflictResolver and DQ.ConflictResolver:DetectConflict("consumables")
-    local choice = DQ.ConflictResolver and DQ.ConflictResolver:GetChoice("consumables")
+-- ==========================================================
+-- ELLESMERE AURA BUFF REMINDERS ENHANCER INTEGRATION
+-- ==========================================================
+local function EnhanceEllesmereIcon(btn)
+    if not btn or btn._dqRotaryHooked then return end
+    btn._dqRotaryHooked = true
 
-    -- 1. Check who controls the feature: if conflict detected and (unconfigured OR forcePrompt requested)
-    if ext and (not choice or forcePrompt) then
-        DQ.ConflictResolver:QueuePrompt("consumables", ext, function(selectedChoice, remember)
-            DQ.ConflictResolver:SetChoice("consumables", selectedChoice, remember)
-        end)
-    else
-        local activeController = choice or "DistractionQoL"
-        local L = DQ.L or {}
-        local prefix = "|cff00e5ff[" .. (L["CONSUMABLES_BAR_TITLE"] or "Consumables") .. "]|r "
-        local infoFmt = L["CONSUMABLES_MSG_CTRL_STATUS"] or "Active controller: |cff00ff88%s|r. Type /consumables choose or click [⚙] to switch."
-        local infoMsg = string.format(infoFmt, activeController)
-        if DEFAULT_CHAT_FRAME and DEFAULT_CHAT_FRAME.AddMessage then
-            DEFAULT_CHAT_FRAME:AddMessage(prefix .. infoMsg)
-        elseif print then
-            print(prefix .. infoMsg)
+    btn:EnableMouseWheel(true)
+    btn:HookScript("OnMouseWheel", function(self, delta)
+        -- Identify category
+        local cat = nil
+        local key = (self._dismissKey or ""):lower()
+        if key:find("flask") or key:find("frasco") then cat = "FLASK"
+        elseif key:find("food") or key:find("comida") then cat = "FOOD"
+        elseif key:find("rune") or key:find("runa") then cat = "RUNE"
+        elseif key:find("weapon") or key:find("arma") or key:find("oil") or key:find("stone") then cat = "WEAPON"
+        elseif self._tooltipItem and DQ.ConsumablesLogic and DQ.ConsumablesLogic.ClassifyItem then
+            cat = DQ.ConsumablesLogic.ClassifyItem(nil, self._tooltipItem)
+        end
+
+        if not cat then return end
+
+        local scanned = DQ.ConsumablesLogic.ScanPlayerBags()
+        local grouped = DQ.ConsumablesLogic.GroupBagItems(scanned)
+        local items = (grouped and grouped[cat]) or {}
+        local count = #items
+        if count <= 1 then return end
+
+        self._dqCurrentIndex = DQ.ConsumablesLogic.CycleIndex(self._dqCurrentIndex or 1, count, delta)
+        local selected = items[self._dqCurrentIndex]
+        if not selected then return end
+
+        -- Update visual icon texture
+        if self._icon and selected.icon then
+            self._icon:SetTexture(selected.icon)
+        end
+
+        -- Update count overlay if present (supports Ellesmere _bagCount and standard _bagCountText)
+        if self._bagCount and self._bagCount.SetText then
+            self._bagCount:SetText(tostring(selected.count or 1))
+        elseif self._bagCountText and self._bagCountText.SetText then
+            self._bagCountText:SetText(tostring(selected.count or 1))
+        end
+
+        -- Update action attributes outside of combat
+        if not InCombatLockdown() then
+            if cat == "WEAPON" then
+                local macroText = DQ.ConsumablesLogic.BuildMacroText("WEAPON", selected.itemID)
+                self:SetAttribute("type1", "macro")
+                self:SetAttribute("macrotext1", macroText)
+            else
+                self:SetAttribute("type1", "item")
+                self:SetAttribute("item1", "item:" .. selected.itemID)
+            end
+        end
+
+        -- Provide audio and tooltip feedback
+        if PlaySound then
+            pcall(PlaySound, SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON or 856, "Master")
+        end
+
+        if GameTooltip:IsOwned(self) and selected.itemID then
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            if GameTooltip.SetItemByID then
+                GameTooltip:SetItemByID(selected.itemID)
+            else
+                GameTooltip:SetHyperlink("item:" .. selected.itemID)
+            end
+            GameTooltip:AddLine(string.format("|cff00e5ff[DistractionQoL Rotary: %d/%d]|r", self._dqCurrentIndex, count))
+            GameTooltip:Show()
+        end
+    end)
+end
+
+function DQ.ConsumablesBar:HookEllesmereReminders()
+    for i = 1, 12 do
+        local btn = _G["EABR_Icon" .. i]
+        if btn then
+            EnhanceEllesmereIcon(btn)
         end
     end
+end
 
-    -- 2. Open the pinned interactive Consumables Bar
-    DQ.ConsumablesBar:ShowBar(nil, true)
+-- Full interactive manager entry point: hooks Ellesmere if installed, or shows standalone bar
+function DQ.ConsumablesBar:OpenManager(forceBar)
+    local hasEllesmere = C_AddOns and (C_AddOns.IsAddOnLoaded("EllesmereUIAuraBuffReminders") or C_AddOns.IsAddOnLoaded("EllesmereUI"))
+    local L = DQ.L or {}
+
+    if hasEllesmere and not forceBar then
+        DQ.ConsumablesBar:HookEllesmereReminders()
+        local prefix = "|cff00e5ff[" .. (L["CONSUMABLES_BAR_TITLE"] or "Consumibles") .. "]|r "
+        local msg = (GetLocale() == "esES" or GetLocale() == "esMX")
+            and "Modo Enhancer activo: Rueda del ratón integrada sobre los iconos de EllesmereUI (gira para alternar frascos/aceites). Usa '/consumables bar' para la barra independiente."
+            or "Enhancer mode active: Mouse wheel integrated on EllesmereUI icons (scroll to cycle flasks/oils). Use '/consumables bar' for standalone HUD."
+        if DEFAULT_CHAT_FRAME and DEFAULT_CHAT_FRAME.AddMessage then
+            DEFAULT_CHAT_FRAME:AddMessage(prefix .. msg)
+        end
+    else
+        DQ.ConsumablesBar:ShowBar(nil, true)
+    end
 
     if PlaySound then
         pcall(PlaySound, SOUNDKIT.IG_MAINMENU_OPEN or 850, "Master")
     end
 end
+
+-- Background event watcher to hook Ellesmere icons when loaded
+local ellesmereWatcher = CreateFrame("Frame")
+ellesmereWatcher:RegisterEvent("PLAYER_LOGIN")
+ellesmereWatcher:RegisterEvent("ADDON_LOADED")
+ellesmereWatcher:RegisterEvent("PLAYER_ENTERING_WORLD")
+ellesmereWatcher:SetScript("OnEvent", function(self, event, addon)
+    if event == "ADDON_LOADED" and addon and addon:find("Ellesmere") then
+        DQ.ConsumablesBar:HookEllesmereReminders()
+    elseif event == "PLAYER_LOGIN" or event == "PLAYER_ENTERING_WORLD" then
+        DQ.ConsumablesBar:HookEllesmereReminders()
+        C_Timer.After(2, function()
+            DQ.ConsumablesBar:HookEllesmereReminders()
+        end)
+    end
+end)
 
 -- Dedicated Top-Level Slash Commands: /consumables, /consumible, /frascos
 SLASH_DISTRACTIONQOL_CONSUMABLES1 = "/consumables"
@@ -501,6 +592,6 @@ SLASH_DISTRACTIONQOL_CONSUMABLES2 = "/consumible"
 SLASH_DISTRACTIONQOL_CONSUMABLES3 = "/frascos"
 SlashCmdList["DISTRACTIONQOL_CONSUMABLES"] = function(msg)
     local sub = (msg or ""):lower():match("^%s*(%S*)")
-    local forcePrompt = (sub == "choose" or sub == "setup" or sub == "prompt" or sub == "conflict" or sub == "conflicts" or sub == "cambiar")
-    DQ.ConsumablesBar:OpenManager(forcePrompt)
+    local forceBar = (sub == "bar" or sub == "barra" or sub == "standalone" or sub == "hud")
+    DQ.ConsumablesBar:OpenManager(forceBar)
 end

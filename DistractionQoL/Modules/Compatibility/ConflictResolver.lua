@@ -518,7 +518,7 @@ local function CreateConflictDialog()
     -- Helper to create modern flat choice buttons
     local function CreateChoiceButton(parent, text, r, g, b)
         local btn = CreateFrame("Button", nil, parent, "BackdropTemplate")
-        btn:SetSize(220, 30)
+        btn:SetHeight(32)
         btn:SetBackdrop({
             bgFile = "Interface\\Buttons\\WHITE8x8",
             edgeFile = "Interface\\Buttons\\WHITE8x8",
@@ -547,9 +547,10 @@ local function CreateConflictDialog()
         return btn
     end
 
-    -- Button 1: DistractionQoL
+    -- Button 1: DistractionQoL (Left side with 5px margin from center)
     local btnDQ = CreateChoiceButton(f, "Usar DistractionQoL", 0.0, 0.85, 1.0)
     btnDQ:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 18, 16)
+    btnDQ:SetPoint("BOTTOMRIGHT", f, "BOTTOM", -5, 16)
     btnDQ:SetScript("OnClick", function()
         local remember = cbDontAsk:GetChecked()
         f:Hide()
@@ -560,8 +561,9 @@ local function CreateConflictDialog()
     end)
     f.btnDQ = btnDQ
 
-    -- Button 2: External Addon
+    -- Button 2: External Addon (Right side with 5px margin from center)
     local btnExt = CreateChoiceButton(f, "Usar EllesmereUI", 0.65, 0.45, 0.95)
+    btnExt:SetPoint("BOTTOMLEFT", f, "BOTTOM", 5, 16)
     btnExt:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -18, 16)
     btnExt:SetScript("OnClick", function()
         local remember = cbDontAsk:GetChecked()

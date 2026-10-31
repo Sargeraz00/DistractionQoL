@@ -240,3 +240,8 @@ function DQ.ConsumablesLogic.ScanPlayerBags()
 
     return flatItems
 end
+
+-- Aliases for backwards and external caller compatibility
+DQ.ConsumablesLogic.ScanBagItems = DQ.ConsumablesLogic.ScanPlayerBags
+DQ.ConsumablesLogic.GroupConsumablesByCategory = DQ.ConsumablesLogic.GroupBagItems
+DQ.ConsumablesLogic.CycleSelection = DQ.ConsumablesLogic.CycleIndex

@@ -32,3 +32,10 @@ Logs/
 release/
 build/
 dist/
+
+# Security & API Secrets
+*.env
+.env*
+*.secret
+*.token
+*credentials*

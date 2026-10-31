@@ -4,7 +4,7 @@
 ## Notes-esES: Herramientas esenciales de calidad de vida, preparación y rendimiento para Míticas+ y Raid.
 ## Notes-esMX: Herramientas esenciales de calidad de vida, preparación y rendimiento para Míticas+ y Raid.
 ## Author: Sargeraz
-## Version: 4.1.2
+## Version: 4.2.3
 ## SavedVariables: DistractionQoLDB
 ## IconTexture: Interface\Icons\Spell_Shadow_DeathScream
 ## Category: Combat
@@ -44,15 +44,11 @@ Modules\BagSort\BagSortLogic.lua
 Modules\BagSort\BagSort.lua
 
 Modules\Chat\ChatHistory.lua
-Modules\MythicPlus\Keystone.lua
 Modules\MythicPlus\WipeRelease.lua
 Modules\Tooltip\TargetedBy.lua
 Modules\Tooltip\ItemCounts.lua
 Modules\Loot\TradeAdvisorLogic.lua
 Modules\Loot\TradeAdvisor.lua
-Modules\LFG\UtilityRadarLogic.lua
-Modules\LFG\UtilityRadar.lua
-Modules\MythicPlus\CommandHub.lua
 
 # --- UI & Presentation Layer ---
 UI\Theme.lua

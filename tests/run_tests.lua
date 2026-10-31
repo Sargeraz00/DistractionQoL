@@ -25,7 +25,7 @@ LoadModule("DistractionQoL/Core/Config.lua")
 DQ.Config:Init()
 LoadModule("DistractionQoL/Modules/Compatibility/ConflictResolver.lua")
 LoadModule("DistractionQoL/Modules/Loot/TradeAdvisorLogic.lua")
-LoadModule("DistractionQoL/Modules/LFG/UtilityRadarLogic.lua")
+LoadModule("DistractionQoL/Modules/Chat/ChatHistory.lua")
 LoadModule("DistractionQoL/Modules/BagSort/BagSortLogic.lua")
 LoadModule("DistractionQoL/Modules/RaidFlow/ConsumablesLogic.lua")
 
@@ -161,45 +161,67 @@ assertTrue(eval4.isWearable, "Trinket is wearable by Rogue")
 assertTrue(eval4.isUpgrade, "Item in empty slot is recognized as an upgrade")
 assertEqual(eval4.ilvlDiff, 645, "ilvl differential matches full item level for empty slot")
 
+-- Test 4b: Midnight Season 2 Ula'tek Mythic full 6/6 drop (344 ilvl) for high-end player (335 ilvl)
+local ulatekChestDrop = {
+    classID = Enum.ItemClass.Armor,
+    subclassID = 4, -- Plate
+    equipLoc = "INVTYPE_CHEST",
+    itemLevel = 344,
+}
+local evalUlatek = DQ.TradeAdvisorLogic.EvaluateDrop(ulatekChestDrop, "PALADIN", 335)
+assertTrue(evalUlatek.isWearable, "Ula'tek Mythic plate chest is wearable by Paladin")
+assertTrue(evalUlatek.isUpgrade, "344 ilvl Ula'tek Mythic 6/6 vs 335 equipped is recognized as an upgrade")
+assertEqual(evalUlatek.ilvlDiff, 9, "Ula'tek Mythic 6/6 gives exactly +9 ilvl over 335 equipped")
+
+-- Test 4c: Midnight Season 2 Heroic trinket (328 ilvl) for high-end player (335 ilvl)
+local heroicTrinketDrop = {
+    classID = Enum.ItemClass.Armor,
+    subclassID = 0,
+    equipLoc = "INVTYPE_TRINKET",
+    itemLevel = 328,
+}
+local evalHeroic = DQ.TradeAdvisorLogic.EvaluateDrop(heroicTrinketDrop, "PALADIN", 335)
+assertTrue(evalHeroic.isWearable, "Heroic trinket is wearable by Paladin")
+assertFalse(evalHeroic.isUpgrade, "328 ilvl vs 335 equipped is NOT an upgrade for a 335 player")
+assertEqual(evalHeroic.ilvlDiff, 0, "ilvl differential is 0 for 328 ilvl trinket")
+
 -- Test 5: Loot message hyperlink regex parsing
 local lootChatSample = "Has recibido botín: |cffa335ee|Hitem:221021::::::::70:268::11:1:3524:::|h[Coraza de Obsidiana del Vacío]|h|r."
 local parsedLink = lootChatSample:match("(|c%x+|Hitem:[^|]+|h%[[^%]]+%]|h|r)")
 assertEqual(parsedLink, "|cffa335ee|Hitem:221021::::::::70:268::11:1:3524:::|h[Coraza de Obsidiana del Vacío]|h|r", "Loot message regex successfully captures itemLink")
 
 -- ========================================================
--- SUITE 3: UtilityRadarLogic (LFG Composition Analysis)
+-- SUITE 3: ChatHistory Defaults & TradeAdvisor Extraction
 -- ========================================================
-print("\n\27[36m--- Suite 3: UtilityRadarLogic (LFG Composition) ---\27[0m")
+print("\n\27[36m--- Suite 3: ChatHistory Defaults & TradeAdvisor Extraction ---\27[0m")
 
--- Scenario A: Group has 4 members (Tank Warrior, Healer Priest, DPS Rogue, DPS Hunter)
--- Utilities present: Hunter brings Bloodlust. Missing: Brez!
-local groupA = {
-    { classToken = "WARRIOR", classLocalized = "Guerrero" },
-    { classToken = "PRIEST",  classLocalized = "Sacerdote" },
-    { classToken = "ROGUE",   classLocalized = "Pícaro" },
-    { classToken = "HUNTER",  classLocalized = "Cazador" },
+-- Case 1: Fresh edit box with empty history returns default /reload
+local mockEditBox = {
+    GetText = function() return "" end
 }
+local firstCmd = DQ.ChatHistory:GetNext(mockEditBox, 1)
+assertEqual(firstCmd, "/reload", "Empty history fallback provides /reload first")
 
--- Case 1: Player is a Paladin (brings Brez!) -> High recommendation!
-local resA1 = DQ.UtilityRadarLogic.EvaluateGroup(groupA, "PALADIN", true)
-assertTrue(resA1.hasLust, "Group has Bloodlust (Hunter)")
-assertEqual(resA1.lustProviderName, "Cazador", "Bloodlust provider correctly identified")
-assertFalse(resA1.hasBrez, "Group is missing Battle Rez")
-assertTrue(resA1.playerProvidesBrez, "Paladin player provides missing Battle Rez")
-assertTrue(resA1.isRecommended, "Group is recommended to Paladin because it lacks Brez")
+local secondCmd = DQ.ChatHistory:GetNext(mockEditBox, 1)
+assertEqual(secondCmd, "/m", "Second history step provides /m")
 
--- Case 2: Player is a Rogue (brings neither) -> Not recommended
-local resA2 = DQ.UtilityRadarLogic.EvaluateGroup(groupA, "ROGUE", true)
-assertFalse(resA2.isRecommended, "Group is NOT recommended to Rogue (does not provide missing utility)")
-assertEqual(resA2.myClassCount, 1, "Correctly identifies 1 other Rogue already in group")
+local thirdCmd = DQ.ChatHistory:GetNext(mockEditBox, 1)
+assertEqual(thirdCmd, "/qol", "Third history step provides /qol")
 
--- Case 3: Group is full (5/5)
-local groupFull = {
-    { classToken = "WARRIOR" }, { classToken = "PRIEST" },
-    { classToken = "ROGUE" }, { classToken = "HUNTER" }, { classToken = "MAGE" }
+-- Case 2: Adding a custom command pushes it to top
+DQ.ChatHistory:AddEntry("/pull 10")
+local customMock = {
+    GetText = function() return "" end
 }
-local resFull = DQ.UtilityRadarLogic.EvaluateGroup(groupFull, "PALADIN", true)
-assertFalse(resFull.isRecommended, "Full group (5/5) is never recommended")
+local recentCmd = DQ.ChatHistory:GetNext(customMock, 1)
+assertEqual(recentCmd, "/pull 10", "Newly added command is retrieved at the top of history")
+
+-- Case 3: Resilient TradeAdvisor hyperlink regex extraction
+local pattern = "(|c%x+|Hitem:[^|]+|h%[[^%]]+%]|h|r)"
+local sample1 = "Valeria-Quel'Thalas recibe botín: |cffa335ee|Hitem:221021::::::::80:268::11:1:3524:::|h[Coraza del Alba del Vacío]|h|r."
+local sample2 = "[Chat] looter got |cff0070dd|Hitem:221150:::|h[Sortija]|h|r"
+assertTrue(sample1:match(pattern) ~= nil, "Captures complex Midnight hyperlink")
+assertTrue(sample2:match(pattern) ~= nil, "Captures short rare hyperlink")
 
 -- ========================================================
 -- SUITE 4: BagSortLogic (Reverse Bag Sort Algorithm)
@@ -333,6 +355,11 @@ assertEqual(DQ.ConsumablesLogic.CycleIndex(1, 3, -1), 3, "Scroll down from 1/3 w
 assertEqual(DQ.ConsumablesLogic.CycleIndex(3, 3, -1), 2, "Scroll down from 3/3 goes back to 2")
 assertEqual(DQ.ConsumablesLogic.CycleIndex(1, 1, 1), 1, "Single item does not cycle out of bounds")
 
+-- 5b. Aliases integrity
+assertEqual(DQ.ConsumablesLogic.CycleSelection, DQ.ConsumablesLogic.CycleIndex, "CycleSelection alias points to CycleIndex")
+assertEqual(DQ.ConsumablesLogic.GroupConsumablesByCategory, DQ.ConsumablesLogic.GroupBagItems, "GroupConsumablesByCategory alias points to GroupBagItems")
+assertEqual(DQ.ConsumablesLogic.ScanBagItems, DQ.ConsumablesLogic.ScanPlayerBags, "ScanBagItems alias points to ScanPlayerBags")
+
 -- 6. GroupBagItems and Sorting
 local sampleBags = {
     { itemID = 250003, name = "Flask of the Magisters", count = 5 },
@@ -407,7 +434,10 @@ local requiredKeys = {
     "CONSUMABLES_WHEEL_CYCLE", "CONSUMABLES_DISTINCT_COUNT", "CONSUMABLES_WEAPON_CLICK_HINT",
     "CONSUMABLES_NO_STOCK", "CONSUMABLES_NO_STOCK_DESC", "CONSUMABLES_GEAR_TITLE",
     "CONSUMABLES_GEAR_MANAGED_BY", "CONSUMABLES_GEAR_HINT", "CONSUMABLES_MSG_CTRL_STATUS",
-    "BTN_FPS_RESTORE"
+    "BTN_FPS_RESTORE",
+    "SIM_TRACK_MYTHIC", "SIM_TRACK_HEROIC", "SIM_BIND_BOP", "SIM_SLOT_CHEST", "SIM_SLOT_FINGER",
+    "SIM_SLOT_TRINKET", "SIM_CHEST_PLATE", "SIM_RING_NAME", "SIM_TRINKET_NAME", "SIM_ILVL_LABEL",
+    "SIM_SOURCE_ULATEK"
 }
 
 -- 7.1 Verify Spanish translations (default mock is esES)
